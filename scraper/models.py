@@ -100,8 +100,14 @@ class EnrichedCompanyData:
     error_message: Optional[str] = None
     confidence_score: float = 0.0
 
+    @property
+    def platform_products(self) -> List[str]:
+        """Generic alias for platform-specific products/features mentioned."""
+        return self.salesforce_products
+
     def to_dict(self) -> Dict:
         """Convert to dictionary for Excel export."""
+        product_text = ", ".join(self.salesforce_products) if self.salesforce_products else ""
         return {
             "Original_URL": self.url,
             "Company_Name": self.company_name,
@@ -110,7 +116,8 @@ class EnrichedCompanyData:
             "Industry": self.industry,
             "Company_Size": self.company_size,
             "Segmentation": self.segmentation,
-            "Salesforce_Products": ", ".join(self.salesforce_products) if self.salesforce_products else "",
+            "Platform_Products": product_text,
+            "Salesforce_Products": product_text,
             "Key_Persons_JSON": str(self.key_persons),
             "Scraped_Text_Preview": self.raw_scraped_text[:500] + "..." if len(self.raw_scraped_text) > 500 else self.raw_scraped_text,
             "AI_Analysis_Summary": self.ai_analysis[:1000] + "..." if len(self.ai_analysis) > 1000 else self.ai_analysis,

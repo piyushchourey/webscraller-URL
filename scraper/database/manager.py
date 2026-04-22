@@ -429,6 +429,7 @@ class DatabaseManager:
                     "industry": company.industry,
                     "company_size": company.company_size,
                     "segmentation": company.segmentation,
+                    "platform_products": company.salesforce_products or [],
                     "salesforce_products": company.salesforce_products or [],
                     "key_persons": [
                         {
