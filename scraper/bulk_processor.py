@@ -56,6 +56,63 @@ Guidelines:
 - Focus on the most prominent company mentioned on the page
 """
 
+# ── Platform Configurations ──────────────────────────────────────────────────────
+PLATFORM_CONFIGS: Dict[str, Dict[str, Any]] = {
+    "salesforce": {
+        "label": "Salesforce",
+        "prompt_suffix": (
+            "\n\nPlatform-specific focus (Salesforce):\n"
+            "- Identify Salesforce products in use: Sales Cloud, Service Cloud, Marketing Cloud, "
+            "Commerce Cloud, Analytics Cloud, Integration Cloud, Platform, CPQ, Einstein, etc.\n"
+            "- Note whether this company is a Salesforce customer, partner, or prospect.\n"
+            "- Populate the 'salesforce_products' field with any products explicitly mentioned."
+        ),
+    },
+    "snowflake": {
+        "label": "Snowflake",
+        "prompt_suffix": (
+            "\n\nPlatform-specific focus (Snowflake Data Cloud):\n"
+            "- Identify Snowflake usage: Data Cloud, Snowpark, Marketplace, Native Apps, etc.\n"
+            "- Note data infrastructure, warehousing, and analytics stack details.\n"
+            "- Populate the 'salesforce_products' field with Snowflake products/features mentioned."
+        ),
+    },
+    "events": {
+        "label": "Events / Conferences",
+        "prompt_suffix": (
+            "\n\nPlatform-specific focus (Events & Conferences):\n"
+            "- Extract event names, dates, locations, and topics this company organises or attends.\n"
+            "- Identify sponsorship tiers or speaking slots if mentioned.\n"
+            "- Populate 'salesforce_products' with event/conference names found."
+        ),
+    },
+    "partners": {
+        "label": "Partners / ISVs",
+        "prompt_suffix": (
+            "\n\nPlatform-specific focus (Partners & ISVs):\n"
+            "- Identify technology partnerships, ISV certifications, or reseller relationships.\n"
+            "- Note partnership tiers (Gold, Platinum, etc.) and joint solutions.\n"
+            "- Populate 'salesforce_products' with partner programme names or joint product names."
+        ),
+    },
+    "custom": {
+        "label": "Custom",
+        "prompt_suffix": "",
+    },
+}
+
+
+def build_extraction_prompt(platform: str = "salesforce", extra_instructions: str = "") -> str:
+    """Build the AI extraction prompt for a given platform with optional extra instructions."""
+    config = PLATFORM_CONFIGS.get(platform, PLATFORM_CONFIGS["salesforce"])
+    prompt = STRUCTURED_EXTRACTION_PROMPT
+    if config.get("prompt_suffix"):
+        prompt += config["prompt_suffix"]
+    if extra_instructions and extra_instructions.strip():
+        prompt += f"\n\nAdditional operator instructions:\n{extra_instructions.strip()}"
+    return prompt
+
+
 # ── Batch Processing Configuration ──────────────────────────────────────────────
 DEFAULT_BATCH_SIZE = 50
 MAX_WORKERS_PER_BATCH = 3
@@ -168,12 +225,15 @@ class BatchProcessor:
         batch_size: int = DEFAULT_BATCH_SIZE,
         max_workers: int = MAX_WORKERS_PER_BATCH,
         ai_provider: str = "ollama",
-        ai_model: str = "mistral:7b"
+        ai_model: str = "mistral:7b",
+        platform: str = "salesforce",
+        extra_instructions: str = "",
     ):
         self.batch_size = batch_size
         self.max_workers = max_workers
         self.ai_provider = ai_provider
         self.ai_model = ai_model
+        self.extraction_prompt = build_extraction_prompt(platform, extra_instructions)
 
         # Initialize analyzers
         self.scraper = WebScraper()
@@ -207,7 +267,7 @@ class BatchProcessor:
 
             ai_result = self.ai_analyzer.analyze(
                 text=scraped_data.main_text,
-                user_prompt=STRUCTURED_EXTRACTION_PROMPT,
+                user_prompt=self.extraction_prompt,
                 source_url=task.url,
                 page_title=scraped_data.title
             )
@@ -458,7 +518,9 @@ def process_excel_file_with_db(
     ai_provider: str = "ollama",
     ai_model: str = "mistral:7b",
     progress_callback: Optional[callable] = None,
-    db_url: str = "sqlite:///webscraper.db"
+    db_url: str = "sqlite:///webscraper.db",
+    platform: str = "salesforce",
+    extra_instructions: str = "",
 ) -> str:
     """
     Process Excel file with database persistence and resumability.
@@ -499,6 +561,7 @@ def process_excel_file_with_db(
         config={
             "ai_provider": ai_provider,
             "ai_model": ai_model,
+            "platform": platform,
             "input_file": input_file,
             "output_file": output_file,
         }
@@ -523,7 +586,9 @@ def process_excel_file_with_db(
     processor = BatchProcessor(
         batch_size=batch_size,
         ai_provider=ai_provider,
-        ai_model=ai_model
+        ai_model=ai_model,
+        platform=platform,
+        extra_instructions=extra_instructions,
     )
 
     # Process batches
@@ -671,7 +736,7 @@ def _process_task_with_db(
         db.update_task_status(db_task.task_id, "analyzing")
         ai_result = processor.ai_analyzer.analyze(
             text=scraped_data.main_text,
-            user_prompt=STRUCTURED_EXTRACTION_PROMPT,
+            user_prompt=processor.extraction_prompt,
             source_url=db_task.original_url,
             page_title=scraped_data.title
         )

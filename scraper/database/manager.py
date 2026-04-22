@@ -137,6 +137,78 @@ class DatabaseManager:
         finally:
             session.close()
 
+    def delete_job(self, job_id: str) -> Dict[str, Any]:
+        """Delete a job and all related records by job ID."""
+        session = self.get_session()
+        try:
+            job = session.query(ProcessingJob).filter(ProcessingJob.job_id == job_id).first()
+            if not job:
+                return {
+                    "deleted": False,
+                    "job_id": job_id,
+                    "message": "Job not found",
+                }
+
+            task_id_subquery = (
+                session.query(ProcessingTask.task_id)
+                .filter(ProcessingTask.job_id == job_id)
+                .subquery()
+            )
+
+            company_id_subquery = (
+                session.query(CompanyData.company_id)
+                .filter(CompanyData.task_id.in_(task_id_subquery))
+                .subquery()
+            )
+
+            deleted_key_persons = (
+                session.query(KeyPerson)
+                .filter(KeyPerson.company_id.in_(company_id_subquery))
+                .delete(synchronize_session=False)
+            )
+
+            deleted_companies = (
+                session.query(CompanyData)
+                .filter(CompanyData.task_id.in_(task_id_subquery))
+                .delete(synchronize_session=False)
+            )
+
+            deleted_tasks = (
+                session.query(ProcessingTask)
+                .filter(ProcessingTask.job_id == job_id)
+                .delete(synchronize_session=False)
+            )
+
+            deleted_batches = (
+                session.query(ProcessingBatch)
+                .filter(ProcessingBatch.job_id == job_id)
+                .delete(synchronize_session=False)
+            )
+
+            deleted_jobs = (
+                session.query(ProcessingJob)
+                .filter(ProcessingJob.job_id == job_id)
+                .delete(synchronize_session=False)
+            )
+
+            session.commit()
+
+            return {
+                "deleted": deleted_jobs > 0,
+                "job_id": job_id,
+                "processing_jobs": deleted_jobs,
+                "processing_batches": deleted_batches,
+                "processing_tasks": deleted_tasks,
+                "company_data": deleted_companies,
+                "key_persons": deleted_key_persons,
+            }
+        except Exception as e:
+            session.rollback()
+            logger.error(f"Failed to delete job {job_id}: {e}")
+            raise
+        finally:
+            session.close()
+
     # ── Task Management ──────────────────────────────────────────────────────
 
     def create_task(

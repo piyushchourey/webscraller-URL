@@ -11,7 +11,7 @@ import pandas as pd
 import streamlit as st
 from sqlalchemy.orm import Session
 
-from scraper.bulk_processor import ExcelProcessor, process_excel_file_with_db
+from scraper.bulk_processor import ExcelProcessor, PLATFORM_CONFIGS, process_excel_file_with_db
 from scraper.database import DatabaseManager
 from scraper.models import BulkJob
 
@@ -210,6 +210,28 @@ with tab_new_job:
                 help="Prevent overwhelming target servers"
             )
 
+            st.subheader("🎯 Platform & Prompt")
+
+            platform_options = {cfg["label"]: key for key, cfg in PLATFORM_CONFIGS.items()}
+            selected_platform_label = st.selectbox(
+                "Target Platform",
+                list(platform_options.keys()),
+                help="Adds platform-specific extraction guidance to the AI prompt",
+            )
+            selected_platform = platform_options[selected_platform_label]
+
+            extra_instructions = st.text_area(
+                "Extra Prompt Instructions (optional)",
+                placeholder=(
+                    "Add any extra guidance for the AI, e.g.:\n"
+                    "- Focus on EMEA region only\n"
+                    "- Extract contract renewal dates if visible\n"
+                    "- Note whether the company is publicly listed"
+                ),
+                height=150,
+                help="These instructions are appended to the AI extraction prompt for every URL in this job.",
+            )
+
         # Preview URLs
         with st.expander("👀 Preview URLs to Process"):
             try:
@@ -302,7 +324,9 @@ with tab_new_job:
                     ai_provider=ai_provider_lower,
                     ai_model=ai_model,
                     progress_callback=progress_callback,
-                    db_url="sqlite:///webscraper.db"
+                    db_url="sqlite:///webscraper.db",
+                    platform=selected_platform,
+                    extra_instructions=extra_instructions,
                 )
 
                 st.session_state.current_job_id = job_id
@@ -464,6 +488,30 @@ with tab_job_history:
             if stats['status'] == 'completed':
                 st.success("✓ This job is completed. Results are available.")
                 render_job_downloads(job_id, db, f"job_{job_id[:8]}", render_context="history_details")
+
+            st.markdown("---")
+            st.subheader("🗑️ Delete This Job")
+            st.warning(
+                "This permanently deletes the selected job and all related records "
+                "(tasks, batches, company data, and key persons)."
+            )
+            delete_confirm = st.checkbox(
+                f"I understand and want to delete job {job_id[:8]}",
+                key=f"delete_confirm_{job_id}",
+            )
+            if st.button(
+                "🗑️ Delete Selected Job",
+                type="secondary",
+                use_container_width=True,
+                key=f"delete_job_btn_{job_id}",
+                disabled=not delete_confirm,
+            ):
+                delete_result = db.delete_job(job_id)
+                if delete_result.get("deleted"):
+                    st.success(f"Deleted job {job_id[:8]} and all related records.")
+                    st.rerun()
+                else:
+                    st.info(delete_result.get("message", "Job not found."))
     else:
         st.info("No processing jobs found. Start a new job to see history.")
 
