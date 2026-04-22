@@ -3,10 +3,13 @@ from typing import Optional
 
 import requests
 import validators
+from urllib.parse import urlsplit, urlunsplit
 
 from scraper.extractors import (
     ContentExtractor,
     MetadataExtractor,
+    PLAYWRIGHT_AVAILABLE,
+    PlaywrightExtractor,
     ReadabilityExtractor,
     TrafilaturaExtractor,
 )
@@ -20,8 +23,20 @@ _DEFAULT_HEADERS = {
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/124.0.0.0 Safari/537.36"
     ),
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
     "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "DNT": "1",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Cache-Control": "max-age=0",
+    "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
 }
 
 REQUEST_TIMEOUT = 15  # seconds
@@ -47,6 +62,7 @@ class WebScraper:
         self._extractors: list[ContentExtractor] = [
             TrafilaturaExtractor(),
             ReadabilityExtractor(),
+            PlaywrightExtractor(),
         ]
 
     # ----- public API --------------------------------------------------------
@@ -57,9 +73,36 @@ class WebScraper:
         Raises ``ScraperError`` on invalid input or network failures.
         """
         url = self._validate_url(url)
-        html, status_code = self._fetch(url)
-        title, main_text = self._extract(html, url)
-        meta = MetadataExtractor(html, url)
+        parsed = urlsplit(url)
+        fragment = parsed.fragment
+        fetch_url = urlunsplit(parsed._replace(fragment="")) if fragment else url
+
+        try:
+            # Try regular HTTP request first
+            html, status_code = self._fetch(fetch_url)
+        except ScraperError as e:
+            if "403" in str(e) and PLAYWRIGHT_AVAILABLE:
+                # Try Playwright for 403 errors (likely anti-bot protection)
+                logger.info(f"Regular request failed with 403, trying Playwright for {fetch_url}")
+                try:
+                    playwright_extractor = PlaywrightExtractor()
+                    html = playwright_extractor.extract_text("", fetch_url)  # Empty html, use URL
+                    if not html:
+                        raise ScraperError("Playwright extraction also failed")
+                    status_code = 200  # Assume success if we got content
+                except Exception as pw_e:
+                    logger.error(f"Playwright fallback failed: {pw_e}")
+                    raise e  # Re-raise original error
+            else:
+                raise
+
+        title, main_text = self._extract(html, fetch_url)
+        if fragment:
+            fragment_text = self._extract_fragment(html, fragment)
+            if fragment_text:
+                main_text = fragment_text
+
+        meta = MetadataExtractor(html, fetch_url)
 
         return ScrapedContent(
             url=url,
@@ -84,12 +127,57 @@ class WebScraper:
             raise ScraperError(f"Invalid URL: {url}")
         return url
 
+    @staticmethod
+    def _extract_fragment(html: str, fragment: str) -> str:
+        """Extract a specific section from HTML based on element id."""
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html, "lxml")
+        node = soup.find(id=fragment)
+        if not node:
+            return ""
+
+        # If fragment marker is heading, include sibling content until next heading
+        content = [node.get_text(" ", strip=True)]
+        if node.name and node.name.startswith("h"):
+            for sibling in node.next_siblings:
+                if hasattr(sibling, "name") and sibling.name and sibling.name.startswith("h"):
+                    break
+                if hasattr(sibling, "get_text"):
+                    text = sibling.get_text(" ", strip=True)
+                    if text:
+                        content.append(text)
+        return "\n\n".join([c for c in content if c])
+
     def _fetch(self, url: str) -> tuple[str, int]:
         try:
+            import time
+            import random
+            
+            # Add small random delay to avoid rate limiting (0.5-2 seconds)
+            time.sleep(random.uniform(0.5, 2.0))
+            
+            # Enhanced cookies for various consent systems
+            cookies = {
+                "cookie_consent": "accepted",
+                "cookieConsent": "true", 
+                "gdpr_consent": "accepted",
+                "cc_cookie": "true",
+                "visitor_id": str(random.randint(1000000, 9999999)),
+                "session_id": str(random.randint(1000000, 9999999)),
+            }
+            
+            # Add Referer header for Salesforce domains
+            headers = {}
+            if "salesforce.com" in url:
+                headers["Referer"] = "https://www.salesforce.com/"
+            
             resp = self._session.get(
                 url,
                 timeout=self._timeout,
                 allow_redirects=True,
+                cookies=cookies,
+                headers=headers,
             )
             resp.raise_for_status()
             if len(resp.content) > MAX_CONTENT_LENGTH:

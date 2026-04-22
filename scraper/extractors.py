@@ -6,6 +6,12 @@ from bs4 import BeautifulSoup
 from readability import Document
 import trafilatura
 
+try:
+    from playwright.sync_api import sync_playwright
+    PLAYWRIGHT_AVAILABLE = True
+except ImportError:
+    PLAYWRIGHT_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -52,6 +58,76 @@ class ReadabilityExtractor(ContentExtractor):
     def extract_title(self, html: str) -> str:
         doc = Document(html)
         return doc.title() or ""
+
+
+class PlaywrightExtractor(ContentExtractor):
+    """Advanced extractor using Playwright for JavaScript-rendered content."""
+
+    def __init__(self, headless: bool = True):
+        if not PLAYWRIGHT_AVAILABLE:
+            raise ImportError("Playwright not installed. Run: pip install playwright && playwright install")
+        self.headless = headless
+
+    def extract_text(self, html: str, url: str) -> str:
+        """Render page with Playwright and extract content."""
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=self.headless)
+                context = browser.new_context(
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    viewport={"width": 1280, "height": 720}
+                )
+                page = context.new_page()
+
+                # Set longer timeout for JS-heavy sites
+                page.set_default_timeout(30000)
+
+                try:
+                    page.goto(url, wait_until="networkidle")
+                    # Wait a bit more for dynamic content
+                    page.wait_for_timeout(2000)
+
+                    # Try trafilatura on the rendered HTML
+                    rendered_html = page.content()
+                    result = trafilatura.extract(
+                        rendered_html,
+                        include_comments=False,
+                        include_tables=True,
+                        no_fallback=False,
+                        favor_precision=False,
+                        url=url,
+                    )
+                    return result or ""
+
+                except Exception as e:
+                    logger.warning(f"Playwright extraction failed for {url}: {e}")
+                    return ""
+                finally:
+                    browser.close()
+
+        except Exception as e:
+            logger.error(f"Playwright setup failed: {e}")
+            return ""
+
+    def extract_title(self, html: str) -> str:
+        """Extract title from rendered page."""
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=self.headless)
+                context = browser.new_context()
+                page = context.new_page()
+
+                try:
+                    page.goto(html if html.startswith(('http://', 'https://')) else f"data:text/html,{html}",
+                             wait_until="domcontentloaded")
+                    title = page.title()
+                    return title or ""
+                finally:
+                    browser.close()
+
+        except Exception as e:
+            logger.error(f"Playwright title extraction failed: {e}")
+            return ""
 
 
 class MetadataExtractor:

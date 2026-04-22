@@ -1,25 +1,57 @@
-"""Streamlit UI — Web Scraper + Gemini Analysis."""
+"""Streamlit UI — Web Scraper + AI Analysis (Gemini or Ollama)."""
 
+import os
 import streamlit as st
 
-from scraper import WebScraper, GeminiAnalyzer
+from scraper import WebScraper
 from scraper.core import ScraperError
-from scraper.ai_analyzer import ANALYSIS_TEMPLATES
+from scraper.ai_analyzer import ANALYSIS_TEMPLATES, get_analyzer
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Web Scraper + AI", page_icon="🔍", layout="wide")
 
+# ── Navigation ───────────────────────────────────────────────────────────────
+st.sidebar.title("🧭 Navigation")
+page = st.sidebar.radio(
+    "Choose a page:",
+    ["🔍 Single URL Processing", "📊 Bulk Processing"],
+    help="Select processing mode"
+)
+
+if page == "📊 Bulk Processing":
+    st.switch_page("pages/bulk_processing.py")
+
+# ── Single URL Processing (Main Page) ────────────────────────────────────────
+st.title("🔍 Web Scraper + AI Analysis")
+st.markdown("Scrape any webpage and use AI to extract exactly the information you need.")
+
 # ── Sidebar: settings ───────────────────────────────────────────────────────
 with st.sidebar:
     st.header("⚙️ Settings")
-    api_key = st.text_input("Gemini API Key", type="password", help="Get yours at aistudio.google.com")
-    model_choice = st.selectbox("Gemini Model", ["gemini-2.5-flash","gemini-2.0-flash", "gemini-2.5-flash-preview-04-17", "gemini-2.5-pro-preview-03-25"])
+    
+    # AI Provider Selection
+    ai_provider = st.radio(
+        "AI Provider",
+        ["Gemini", "Ollama"],
+        help="Choose between Gemini (cloud) or Ollama (local)"
+    )
+    
+    st.divider()
+    
+    if ai_provider == "Gemini":
+        api_key = st.text_input("Gemini API Key", type="password", help="Get yours at aistudio.google.com")
+        model_choice = st.selectbox("Gemini Model", ["gemini-2.5-flash","gemini-2.0-flash", "gemini-2.5-flash-preview-04-17", "gemini-2.5-pro-preview-03-25"])
+    else:  # Ollama
+        api_key = None
+        ollama_base_url = st.text_input("Ollama Server URL", value="http://localhost:11434", help="URL where Ollama is running")
+        model_choice = st.text_input("Ollama Model", value="mistral:7b", help="e.g., mistral:7b, llama2:7b, neural-chat")
+    
     st.divider()
     st.markdown(
         "**How it works**\n"
         "1. Enter a URL to scrape\n"
         "2. Raw content is extracted\n"
-        "3. Gemini analyzes it with your prompt"
+        "3. AI analyzes it with your prompt"
     )
 
 # ── Cached instances ────────────────────────────────────────────────────────
@@ -29,9 +61,6 @@ def get_scraper() -> WebScraper:
 
 
 # ── Main UI ──────────────────────────────────────────────────────────────────
-st.title("🔍 Web Scraper + Gemini AI")
-st.markdown("Scrape any webpage and use Gemini to extract exactly the information you need.")
-
 # URL input
 url = st.text_input("🌐 URL", placeholder="https://example.com/article")
 
@@ -86,11 +115,16 @@ if "scraped" in st.session_state:
 
     # ── AI Analysis Section ──────────────────────────────────────────────────
     st.divider()
-    st.subheader("🤖 AI Analysis with Gemini")
+    provider_display = "Gemini" if ai_provider == "Gemini" else f"Ollama ({model_choice})"
+    st.subheader(f"🤖 AI Analysis with {provider_display}")
 
-    if not api_key:
+    # Check configuration validity
+    if ai_provider == "Gemini" and not api_key:
         st.warning("Enter your Gemini API key in the sidebar to enable AI analysis.")
-    else:
+    elif ai_provider == "Ollama":
+        st.info(f"Using Ollama at {ollama_base_url}")
+    
+    if (ai_provider == "Gemini" and api_key) or ai_provider == "Ollama":
         # Template buttons
         st.markdown("**Quick analysis templates:**")
         template_cols = st.columns(len(ANALYSIS_TEMPLATES))
@@ -117,9 +151,14 @@ if "scraped" in st.session_state:
 
         # Run analysis
         if analysis_prompt:
-            with st.spinner("Gemini is analyzing the content…"):
+            spinner_text = f"{ai_provider} is analyzing the content…"
+            with st.spinner(spinner_text):
                 try:
-                    analyzer = GeminiAnalyzer(api_key=api_key, model=model_choice)
+                    if ai_provider == "Gemini":
+                        analyzer = get_analyzer(provider="gemini", api_key=api_key, model=model_choice)
+                    else:  # Ollama
+                        analyzer = get_analyzer(provider="ollama", base_url=ollama_base_url, model=model_choice)
+                    
                     analysis = analyzer.analyze(
                         text=r.main_text,
                         user_prompt=analysis_prompt,
@@ -130,7 +169,7 @@ if "scraped" in st.session_state:
                     if "analysis_history" not in st.session_state:
                         st.session_state["analysis_history"] = []
                     st.session_state["analysis_history"].append(analysis)
-                except ValueError as exc:
+                except (ValueError, ConnectionError) as exc:
                     st.error(str(exc))
                 except Exception as exc:
                     st.error(f"**Gemini error:** {exc}")
