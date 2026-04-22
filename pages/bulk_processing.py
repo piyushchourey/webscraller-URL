@@ -22,6 +22,7 @@ def build_export_dataframes(results: List[dict]) -> tuple[pd.DataFrame, pd.DataF
     key_person_rows = []
 
     for result in results:
+        product_values = result.get("platform_products") or result.get("salesforce_products", [])
         company_rows.append({
             "Original_URL": result.get("original_url", ""),
             "Company_Name": result.get("company_name", ""),
@@ -30,7 +31,7 @@ def build_export_dataframes(results: List[dict]) -> tuple[pd.DataFrame, pd.DataF
             "Industry": result.get("industry", ""),
             "Company_Size": result.get("company_size", ""),
             "Segmentation": result.get("segmentation", ""),
-            "Salesforce_Products": ", ".join(result.get("salesforce_products", [])),
+            "Platform_Products": ", ".join(product_values),
             "Confidence_Score": result.get("confidence_score", 0.0),
         })
 
@@ -120,6 +121,81 @@ and database persistence for resumable processing.
 
 db = st.session_state.db_manager
 
+with st.sidebar:
+    st.header("⚙️ Processing Configuration")
+
+    ai_provider = st.radio(
+        "AI Provider",
+        ["Ollama", "Gemini"],
+        help="Choose between local Ollama or cloud Gemini"
+    )
+
+    ai_provider_lower = ai_provider.lower()
+
+    if ai_provider_lower == "ollama":
+        ai_model = st.selectbox(
+            "Ollama Model",
+            ["mistral:7b", "neural-chat:7b", "llama2:7b", "dolphin-mixtral:latest"],
+            help="Select model available in your Ollama installation"
+        )
+    else:
+        ai_model = st.selectbox(
+            "Gemini Model",
+            ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"],
+            help="Available Gemini models"
+        )
+
+    st.subheader("Batch Settings")
+    batch_size = st.slider(
+        "URLs per batch",
+        min_value=10,
+        max_value=100,
+        value=50,
+        step=10,
+        help="Smaller batches = slower but more reliable"
+    )
+
+    max_workers = st.slider(
+        "Concurrent workers per batch",
+        min_value=1,
+        max_value=10,
+        value=3,
+        step=1,
+        help="Higher values = faster but may hit rate limits"
+    )
+
+    batch_delay = st.slider(
+        "Delay between batches (seconds)",
+        min_value=0,
+        max_value=30,
+        value=5,
+        step=1,
+        help="Prevent overwhelming target servers"
+    )
+
+    st.subheader("🎯 Platform & Prompt")
+    platform_labels = {config["label"]: key for key, config in PLATFORM_CONFIGS.items()}
+    selected_platform_label = st.selectbox(
+        "Target Platform",
+        options=list(platform_labels.keys()),
+        index=0,
+        help="Choose which platform-specific prompt should guide extraction.",
+    )
+    selected_platform = platform_labels[selected_platform_label]
+
+    extra_instructions = st.text_area(
+        "Extra Prompt Instructions",
+        value="",
+        height=140,
+        placeholder=(
+            "Examples:\n"
+            "- Focus on implementation partners only\n"
+            "- Look for Snowpark or data cloud references\n"
+            "- For Custom mode, describe exactly what to extract"
+        ),
+        help="Optional instructions appended to the default extraction prompt for every URL in this job.",
+    )
+
 # ── Tabs for different sections ───────────────────────────────────────────────
 tab_new_job, tab_job_history, tab_resume = st.tabs(
     ["🚀 New Processing Job", "📋 Job History", "▶️ Resume Processing"]
@@ -155,83 +231,6 @@ with tab_new_job:
     if uploaded_file:
         st.success("✓ File uploaded successfully")
 
-        # Sidebar Configuration
-        with st.sidebar:
-            st.header("⚙️ Processing Configuration")
-
-            # AI Provider
-            ai_provider = st.radio(
-                "AI Provider",
-                ["Ollama", "Gemini"],
-                help="Choose between local Ollama or cloud Gemini"
-            )
-
-            ai_provider_lower = ai_provider.lower()
-
-            # AI Model selection
-            if ai_provider_lower == "ollama":
-                ai_model = st.selectbox(
-                    "Ollama Model",
-                    ["mistral:7b", "neural-chat:7b", "llama2:7b", "dolphin-mixtral:latest"],
-                    help="Select model available in your Ollama installation"
-                )
-            else:
-                ai_model = st.selectbox(
-                    "Gemini Model",
-                    ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"],
-                    help="Available Gemini models"
-                )
-
-            st.subheader("Batch Settings")
-            batch_size = st.slider(
-                "URLs per batch",
-                min_value=10,
-                max_value=100,
-                value=50,
-                step=10,
-                help="Smaller batches = slower but more reliable"
-            )
-
-            max_workers = st.slider(
-                "Concurrent workers per batch",
-                min_value=1,
-                max_value=10,
-                value=3,
-                step=1,
-                help="Higher values = faster but may hit rate limits"
-            )
-
-            batch_delay = st.slider(
-                "Delay between batches (seconds)",
-                min_value=0,
-                max_value=30,
-                value=5,
-                step=1,
-                help="Prevent overwhelming target servers"
-            )
-
-            st.subheader("🎯 Platform & Prompt")
-
-            platform_options = {cfg["label"]: key for key, cfg in PLATFORM_CONFIGS.items()}
-            selected_platform_label = st.selectbox(
-                "Target Platform",
-                list(platform_options.keys()),
-                help="Adds platform-specific extraction guidance to the AI prompt",
-            )
-            selected_platform = platform_options[selected_platform_label]
-
-            extra_instructions = st.text_area(
-                "Extra Prompt Instructions (optional)",
-                placeholder=(
-                    "Add any extra guidance for the AI, e.g.:\n"
-                    "- Focus on EMEA region only\n"
-                    "- Extract contract renewal dates if visible\n"
-                    "- Note whether the company is publicly listed"
-                ),
-                height=150,
-                help="These instructions are appended to the AI extraction prompt for every URL in this job.",
-            )
-
         # Preview URLs
         with st.expander("👀 Preview URLs to Process"):
             try:
@@ -245,6 +244,7 @@ with tab_new_job:
                     "url": "URL",
                     "segmentation": "Segmentation",
                     "company_size": "Company_Size",
+                    "platform_products": "Platform_Products",
                     "salesforce_products": "Salesforce_Products",
                 })
 
@@ -488,30 +488,6 @@ with tab_job_history:
             if stats['status'] == 'completed':
                 st.success("✓ This job is completed. Results are available.")
                 render_job_downloads(job_id, db, f"job_{job_id[:8]}", render_context="history_details")
-
-            st.markdown("---")
-            st.subheader("🗑️ Delete This Job")
-            st.warning(
-                "This permanently deletes the selected job and all related records "
-                "(tasks, batches, company data, and key persons)."
-            )
-            delete_confirm = st.checkbox(
-                f"I understand and want to delete job {job_id[:8]}",
-                key=f"delete_confirm_{job_id}",
-            )
-            if st.button(
-                "🗑️ Delete Selected Job",
-                type="secondary",
-                use_container_width=True,
-                key=f"delete_job_btn_{job_id}",
-                disabled=not delete_confirm,
-            ):
-                delete_result = db.delete_job(job_id)
-                if delete_result.get("deleted"):
-                    st.success(f"Deleted job {job_id[:8]} and all related records.")
-                    st.rerun()
-                else:
-                    st.info(delete_result.get("message", "Job not found."))
     else:
         st.info("No processing jobs found. Start a new job to see history.")
 

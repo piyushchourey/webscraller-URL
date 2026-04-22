@@ -37,7 +37,7 @@ Please return a JSON object with the following fields:
   "industry": "Primary industry or business sector",
   "company_size": "Company size category. Must be ONE of: '1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000', '5000+'. If unclear, estimate based on context.",
   "segmentation": "Market segmentation category. Must be ONE of: 'Enterprise', 'Mid-market', 'Small-mid'. Base on company size and market position.",
-  "salesforce_products": ["List of Salesforce products mentioned (Such as Products Used Section) on the page.Look for: Sales Cloud, Service Cloud, Marketing Cloud, Commerce Cloud, Analytics Cloud, Integration Cloud, Platform, CPQ, Einstein, etc."],
+    "platform_products": ["List of platform-specific products, clouds, features, solutions, or offerings mentioned on the page. For Salesforce: Sales Cloud, Service Cloud, Marketing Cloud, Commerce Cloud, Analytics Cloud, Integration Cloud, Platform, CPQ, Einstein, etc. For Snowflake: Snowpark, Data Cloud, Marketplace, Native Apps, Cortex, etc."],
   "key_persons": [
     {
       "name": "Person's full name",
@@ -51,48 +51,28 @@ Please return a JSON object with the following fields:
 Guidelines:
 - For company_size: Look for 'employees', 'team size', 'headcount' mentions. Estimate if needed.
 - For segmentation: Enterprise = 500+ employees, Mid-market = 51-500 employees, Small-mid = 11-50 employees
-- For Salesforce products: Only include if explicitly mentioned or strongly implied from page content
+- For platform_products: Only include products/features if explicitly mentioned or strongly implied from page content
 - If information is not available, use empty strings or empty arrays
 - Focus on the most prominent company mentioned on the page
 """
 
-# ── Platform Configurations ──────────────────────────────────────────────────────
 PLATFORM_CONFIGS: Dict[str, Dict[str, Any]] = {
     "salesforce": {
         "label": "Salesforce",
         "prompt_suffix": (
             "\n\nPlatform-specific focus (Salesforce):\n"
-            "- Identify Salesforce products in use: Sales Cloud, Service Cloud, Marketing Cloud, "
-            "Commerce Cloud, Analytics Cloud, Integration Cloud, Platform, CPQ, Einstein, etc.\n"
-            "- Note whether this company is a Salesforce customer, partner, or prospect.\n"
-            "- Populate the 'salesforce_products' field with any products explicitly mentioned."
+            "- Identify Salesforce products in use such as Sales Cloud, Service Cloud, Marketing Cloud, Commerce Cloud, Analytics Cloud, Integration Cloud, Platform, CPQ, Einstein, etc.\n"
+            "- Note whether the company appears to be a customer, implementation partner, consulting partner, or prospect.\n"
+            "- Populate the 'platform_products' field with products or clouds explicitly mentioned on the page."
         ),
     },
     "snowflake": {
         "label": "Snowflake",
         "prompt_suffix": (
-            "\n\nPlatform-specific focus (Snowflake Data Cloud):\n"
-            "- Identify Snowflake usage: Data Cloud, Snowpark, Marketplace, Native Apps, etc.\n"
-            "- Note data infrastructure, warehousing, and analytics stack details.\n"
-            "- Populate the 'salesforce_products' field with Snowflake products/features mentioned."
-        ),
-    },
-    "events": {
-        "label": "Events / Conferences",
-        "prompt_suffix": (
-            "\n\nPlatform-specific focus (Events & Conferences):\n"
-            "- Extract event names, dates, locations, and topics this company organises or attends.\n"
-            "- Identify sponsorship tiers or speaking slots if mentioned.\n"
-            "- Populate 'salesforce_products' with event/conference names found."
-        ),
-    },
-    "partners": {
-        "label": "Partners / ISVs",
-        "prompt_suffix": (
-            "\n\nPlatform-specific focus (Partners & ISVs):\n"
-            "- Identify technology partnerships, ISV certifications, or reseller relationships.\n"
-            "- Note partnership tiers (Gold, Platinum, etc.) and joint solutions.\n"
-            "- Populate 'salesforce_products' with partner programme names or joint product names."
+            "\n\nPlatform-specific focus (Snowflake):\n"
+            "- Identify Snowflake products, platform usage, data cloud references, Snowpark, marketplace mentions, or partner references.\n"
+            "- Capture analytics, data engineering, or warehousing use cases if they are described.\n"
+            "- Populate the 'platform_products' field with Snowflake products, features, or solution names mentioned on the page."
         ),
     },
     "custom": {
@@ -103,15 +83,18 @@ PLATFORM_CONFIGS: Dict[str, Dict[str, Any]] = {
 
 
 def build_extraction_prompt(platform: str = "salesforce", extra_instructions: str = "") -> str:
-    """Build the AI extraction prompt for a given platform with optional extra instructions."""
-    config = PLATFORM_CONFIGS.get(platform, PLATFORM_CONFIGS["salesforce"])
+    """Build the extraction prompt for the selected platform."""
+    platform_config = PLATFORM_CONFIGS.get(platform, PLATFORM_CONFIGS["salesforce"])
     prompt = STRUCTURED_EXTRACTION_PROMPT
-    if config.get("prompt_suffix"):
-        prompt += config["prompt_suffix"]
+
+    prompt_suffix = platform_config.get("prompt_suffix", "")
+    if prompt_suffix:
+        prompt += prompt_suffix
+
     if extra_instructions and extra_instructions.strip():
         prompt += f"\n\nAdditional operator instructions:\n{extra_instructions.strip()}"
-    return prompt
 
+    return prompt
 
 # ── Batch Processing Configuration ──────────────────────────────────────────────
 DEFAULT_BATCH_SIZE = 50
@@ -139,6 +122,8 @@ class ExcelProcessor:
                 existing_row["segmentation"] = row["segmentation"]
             if not existing_row.get("company_size") and row.get("company_size"):
                 existing_row["company_size"] = row["company_size"]
+            if not existing_row.get("platform_products") and row.get("platform_products"):
+                existing_row["platform_products"] = row["platform_products"]
             if not existing_row.get("salesforce_products") and row.get("salesforce_products"):
                 existing_row["salesforce_products"] = row["salesforce_products"]
 
@@ -163,6 +148,7 @@ class ExcelProcessor:
                     "url": url_str,
                     "segmentation": "",
                     "company_size": "",
+                    "platform_products": [],
                     "salesforce_products": [],
                 }
 
@@ -176,11 +162,24 @@ class ExcelProcessor:
                     if pd.notna(company_size_value):
                         row_metadata['company_size'] = str(company_size_value).strip()
 
-                if 'Salesforce_Products' in df.columns or 'Salesforce Products' in df.columns:
-                    products_value = row.get('Salesforce_Products', row.get('Salesforce Products', ''))
+                if (
+                    'Platform_Products' in df.columns
+                    or 'Platform Products' in df.columns
+                    or 'Salesforce_Products' in df.columns
+                    or 'Salesforce Products' in df.columns
+                ):
+                    products_value = row.get(
+                        'Platform_Products',
+                        row.get(
+                            'Platform Products',
+                            row.get('Salesforce_Products', row.get('Salesforce Products', ''))
+                        )
+                    )
                     if pd.notna(products_value):
                         products_text = str(products_value).strip()
-                        row_metadata['salesforce_products'] = [x.strip() for x in products_text.split(',') if x.strip()]
+                        parsed_products = [x.strip() for x in products_text.split(',') if x.strip()]
+                        row_metadata['platform_products'] = parsed_products
+                        row_metadata['salesforce_products'] = parsed_products
 
                 rows.append(row_metadata)
 
@@ -201,7 +200,7 @@ class ExcelProcessor:
             # Reorder columns for better readability
             column_order = [
                 "Original_URL", "Company_Name", "Location", "Website",
-                "Company_Size", "Segmentation", "Salesforce_Products",
+                "Company_Size", "Segmentation", "Platform_Products", "Salesforce_Products",
                 "Industry", "Key_Persons_JSON", "Confidence_Score",
                 "Processing_Status", "Error_Message",
                 "Scraped_Text_Preview", "AI_Analysis_Summary"
@@ -304,6 +303,17 @@ class BatchProcessor:
         """Parse AI response and create structured data."""
         try:
             row_metadata = row_metadata or {}
+
+            def resolve_product_mentions(parsed_data: Dict[str, Any]) -> List[str]:
+                """Resolve platform product mentions from generic or legacy keys."""
+                return (
+                    row_metadata.get('platform_products')
+                    or row_metadata.get('salesforce_products')
+                    or parsed_data.get('platform_products', [])
+                    or parsed_data.get('salesforce_products', [])
+                    or parsed_data.get('snowflake_products', [])
+                )
+
             # Try to parse JSON from AI response
             response_text = ai_result.response_text.strip()
 
@@ -324,7 +334,7 @@ class BatchProcessor:
                     industry=data.get('industry', ''),
                     company_size=row_metadata.get('company_size') or data.get('company_size', ''),
                     segmentation=row_metadata.get('segmentation') or data.get('segmentation', ''),
-                    salesforce_products=row_metadata.get('salesforce_products') or data.get('salesforce_products', []),
+                    salesforce_products=resolve_product_mentions(data),
                     key_persons=data.get('key_persons', []),
                     raw_scraped_text=scraped_data.main_text,
                     ai_analysis=ai_result.response_text,
@@ -337,7 +347,7 @@ class BatchProcessor:
                     url=url,
                     company_size=row_metadata.get('company_size', ''),
                     segmentation=row_metadata.get('segmentation', ''),
-                    salesforce_products=row_metadata.get('salesforce_products', []),
+                    salesforce_products=row_metadata.get('platform_products') or row_metadata.get('salesforce_products', []),
                     raw_scraped_text=scraped_data.main_text,
                     ai_analysis=ai_result.response_text,
                     processing_status="completed",
@@ -350,7 +360,7 @@ class BatchProcessor:
                 url=url,
                 company_size=row_metadata.get('company_size', ''),
                 segmentation=row_metadata.get('segmentation', ''),
-                salesforce_products=row_metadata.get('salesforce_products', []),
+                salesforce_products=row_metadata.get('platform_products') or row_metadata.get('salesforce_products', []),
                 raw_scraped_text=scraped_data.main_text,
                 ai_analysis=ai_result.response_text,
                 processing_status="completed",
@@ -484,7 +494,9 @@ def process_excel_file(
     batch_size: int = DEFAULT_BATCH_SIZE,
     ai_provider: str = "ollama",
     ai_model: str = "mistral:7b",
-    progress_callback: Optional[callable] = None
+    progress_callback: Optional[callable] = None,
+    platform: str = "salesforce",
+    extra_instructions: str = "",
 ) -> BulkJob:
     """Main function to process Excel file with URLs."""
 
@@ -500,7 +512,9 @@ def process_excel_file(
     processor = BatchProcessor(
         batch_size=batch_size,
         ai_provider=ai_provider,
-        ai_model=ai_model
+        ai_model=ai_model,
+        platform=platform,
+        extra_instructions=extra_instructions,
     )
 
     enriched_data, job = processor.process_all_batches(rows, progress_callback)
@@ -562,6 +576,7 @@ def process_excel_file_with_db(
             "ai_provider": ai_provider,
             "ai_model": ai_model,
             "platform": platform,
+            "extra_instructions": extra_instructions,
             "input_file": input_file,
             "output_file": output_file,
         }
