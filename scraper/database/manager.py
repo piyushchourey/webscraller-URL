@@ -1,10 +1,11 @@
 """Database manager for all persistence operations."""
 
 import logging
+import os
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 
-from sqlalchemy import create_engine, and_, func
+from sqlalchemy import create_engine, and_, func, inspect, text
 from sqlalchemy.orm import sessionmaker, Session
 
 from scraper.database.models import (
@@ -20,10 +21,18 @@ from scraper.models import EnrichedCompanyData
 logger = logging.getLogger(__name__)
 
 
+def get_database_url() -> str:
+    """Resolve database URL from environment with SQLite fallback."""
+    db_url = os.getenv("DATABASE_URL") or os.getenv("DB_URL") or "sqlite:///webscraper.db"
+    if db_url.startswith("postgres://"):
+        return db_url.replace("postgres://", "postgresql+psycopg2://", 1)
+    return db_url
+
+
 class DatabaseManager:
     """Manages all database operations for the scraper."""
 
-    def __init__(self, db_url: str = "sqlite:///webscraper.db"):
+    def __init__(self, db_url: Optional[str] = None):
         """
         Initialize database connection and create tables.
 
@@ -32,12 +41,31 @@ class DatabaseManager:
                    - SQLite: "sqlite:///webscraper.db" (default)
                    - PostgreSQL: "postgresql+psycopg2://user:password@localhost/dbname"
         """
-        self.engine = create_engine(db_url, echo=False)
+        resolved_db_url = db_url or get_database_url()
+        self.engine = create_engine(resolved_db_url, echo=False)
         self.SessionLocal = sessionmaker(bind=self.engine)
 
         # Create all tables
         Base.metadata.create_all(bind=self.engine)
-        logger.info(f"Database initialized: {db_url}")
+        self._ensure_schema_compatibility()
+        logger.info(f"Database initialized: {resolved_db_url}")
+
+    def _ensure_schema_compatibility(self):
+        """Apply lightweight runtime schema compatibility patches."""
+        inspector = inspect(self.engine)
+        if not inspector.has_table("processing_jobs"):
+            return
+
+        column_names = {col["name"] for col in inspector.get_columns("processing_jobs")}
+        if "job_name" in column_names:
+            return
+
+        dialect_name = self.engine.dialect.name
+        with self.engine.begin() as connection:
+            if dialect_name == "postgresql":
+                connection.execute(text("ALTER TABLE processing_jobs ADD COLUMN IF NOT EXISTS job_name TEXT"))
+            elif dialect_name == "sqlite":
+                connection.execute(text("ALTER TABLE processing_jobs ADD COLUMN job_name TEXT"))
 
     def get_session(self) -> Session:
         """Get a new database session."""
@@ -50,6 +78,7 @@ class DatabaseManager:
         job_id: str,
         total_urls: int,
         batch_size: int = 50,
+        job_name: Optional[str] = None,
         config: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Create a new processing job."""
@@ -58,6 +87,7 @@ class DatabaseManager:
             total_batches = (total_urls + batch_size - 1) // batch_size
             job = ProcessingJob(
                 job_id=job_id,
+                job_name=job_name,
                 status="pending",
                 total_urls=total_urls,
                 batch_size=batch_size,
@@ -70,6 +100,7 @@ class DatabaseManager:
             # Return dict instead of detached object
             result = {
                 "job_id": job.job_id,
+                "job_name": job.job_name,
                 "status": job.status,
                 "total_urls": job.total_urls,
                 "batch_size": job.batch_size,
@@ -133,6 +164,10 @@ class DatabaseManager:
                 .limit(limit)
                 .all()
             )
+            # Merge jobs into session to make them persistent before session closes
+            # This ensures all attributes remain accessible after session.close()
+            for job in jobs:
+                session.merge(job, load=False)
             return jobs
         finally:
             session.close()
@@ -440,6 +475,10 @@ class DatabaseManager:
                         for p in company.key_persons
                     ],
                     "confidence_score": company.confidence_score,
+                    "enrichment_status": company.enrichment_status or "pending",
+                    "smartlead_enrichment": company.smartlead_enrichment,
+                    "enrichment_updated_at": company.enrichment_updated_at,
+                    "enrichment_last_error": company.enrichment_last_error,
                 }
                 results.append(company_dict)
 
@@ -492,6 +531,7 @@ class DatabaseManager:
 
             return {
                 "job_id": job_id,
+                "job_name": job.job_name,
                 "status": job.status,
                 "total_urls": job.total_urls,
                 "completed_urls": completed_tasks,
@@ -508,3 +548,155 @@ class DatabaseManager:
     def close(self):
         """Close database connection."""
         self.engine.dispose()
+
+    # ── Enrichment Support ───────────────────────────────────────────────────
+
+    def get_companies_for_enrichment(self, job_id: str, status: str = "pending", limit: int = 100) -> List[CompanyData]:
+        """
+        Get companies for enrichment by status and job.
+        
+        Args:
+            job_id: Job ID to filter by
+            status: Enrichment status (pending, processing, enriched, failed)
+            limit: Maximum number of companies to return
+            
+        Returns:
+            List of CompanyData records
+        """
+        session = self.get_session()
+        try:
+            companies = (
+                session.query(CompanyData)
+                .join(ProcessingTask, CompanyData.task_id == ProcessingTask.task_id)
+                .filter(
+                    and_(
+                        ProcessingTask.job_id == job_id,
+                        CompanyData.enrichment_status == status,
+                    )
+                )
+                .limit(limit)
+                .all()
+            )
+            return companies
+        finally:
+            session.close()
+
+    def get_enrichment_stats(self, job_id: str) -> Dict[str, int]:
+        """
+        Get enrichment status breakdown for a job.
+        
+        Args:
+            job_id: Job ID
+            
+        Returns:
+            Dict with status counts and total
+        """
+        session = self.get_session()
+        try:
+            stats = (
+                session.query(
+                    CompanyData.enrichment_status,
+                    func.count(CompanyData.company_id).label("count")
+                )
+                .join(ProcessingTask, CompanyData.task_id == ProcessingTask.task_id)
+                .filter(ProcessingTask.job_id == job_id)
+                .group_by(CompanyData.enrichment_status)
+                .all()
+            )
+            
+            result = {
+                "pending": 0,
+                "processing": 0,
+                "enriched": 0,
+                "failed": 0,
+                "total": 0,
+            }
+            
+            for status, count in stats:
+                if status in result:
+                    result[status] = count
+                result["total"] += count
+            
+            return result
+        finally:
+            session.close()
+
+    def update_company_enrichment(
+        self,
+        company_id: int,
+        enrichment_status: str,
+        enrichment_data: Optional[Dict[str, Any]] = None,
+        error_message: Optional[str] = None,
+        retry_count: Optional[int] = None,
+    ) -> bool:
+        """
+        Update company enrichment status and data.
+        
+        Args:
+            company_id: Company ID
+            enrichment_status: New status (pending/processing/enriched/failed)
+            enrichment_data: Enrichment JSON data (for success)
+            error_message: Error message (for failed)
+            retry_count: Increment retry count
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        session = self.get_session()
+        try:
+            company = session.query(CompanyData).filter(CompanyData.company_id == company_id).first()
+            if not company:
+                logger.warning(f"Company {company_id} not found")
+                return False
+            
+            company.enrichment_status = enrichment_status
+            company.enrichment_updated_at = datetime.utcnow()
+            
+            if enrichment_data:
+                company.smartlead_enrichment = enrichment_data
+                company.enrichment_last_error = None
+            
+            if error_message:
+                company.enrichment_last_error = error_message
+            
+            if retry_count is not None:
+                company.enrichment_retry_count = retry_count
+            
+            session.commit()
+            logger.info(f"Updated company {company_id} enrichment to {enrichment_status}")
+            return True
+            
+        except Exception as e:
+            session.rollback()
+            logger.error(f"Error updating enrichment for company {company_id}: {e}")
+            return False
+        finally:
+            session.close()
+
+    def increment_enrichment_retry(self, company_id: int) -> int:
+        """
+        Increment retry count for a company.
+        
+        Args:
+            company_id: Company ID
+            
+        Returns:
+            New retry count or -1 on error
+        """
+        session = self.get_session()
+        try:
+            company = session.query(CompanyData).filter(CompanyData.company_id == company_id).first()
+            if not company:
+                return -1
+            
+            company.enrichment_retry_count = (company.enrichment_retry_count or 0) + 1
+            session.commit()
+            return company.enrichment_retry_count
+            
+        except Exception as e:
+            session.rollback()
+            logger.error(f"Error incrementing retry for company {company_id}: {e}")
+            return -1
+        finally:
+            session.close()
+

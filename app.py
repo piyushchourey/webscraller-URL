@@ -6,24 +6,16 @@ import streamlit as st
 from scraper import WebScraper
 from scraper.core import ScraperError
 from scraper.ai_analyzer import ANALYSIS_TEMPLATES, get_analyzer
+from scraper.ui_styles import apply_app_shell_styles
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Web Scraper + AI", page_icon="🔍", layout="wide")
-
-# ── Navigation ───────────────────────────────────────────────────────────────
-st.sidebar.title("🧭 Navigation")
-page = st.sidebar.radio(
-    "Choose a page:",
-    ["🔍 Single URL Processing", "📊 Bulk Processing"],
-    help="Select processing mode"
-)
-
-if page == "📊 Bulk Processing":
-    st.switch_page("pages/bulk_processing.py")
+apply_app_shell_styles("Single URL")
 
 # ── Single URL Processing (Main Page) ────────────────────────────────────────
 st.title("🔍 Web Scraper + AI Analysis")
 st.markdown("Scrape any webpage and use AI to extract exactly the information you need.")
+st.caption("Use the left sidebar pages for Batch URL Pipeline and Smartlead Enrichment.")
 
 # ── Sidebar: settings ───────────────────────────────────────────────────────
 with st.sidebar:

@@ -532,9 +532,10 @@ def process_excel_file_with_db(
     ai_provider: str = "ollama",
     ai_model: str = "mistral:7b",
     progress_callback: Optional[callable] = None,
-    db_url: str = "sqlite:///webscraper.db",
+    db_url: Optional[str] = None,
     platform: str = "salesforce",
     extra_instructions: str = "",
+    job_name: Optional[str] = None,
 ) -> str:
     """
     Process Excel file with database persistence and resumability.
@@ -572,11 +573,13 @@ def process_excel_file_with_db(
         job_id=job_id,
         total_urls=len(urls),
         batch_size=batch_size,
+        job_name=job_name,
         config={
             "ai_provider": ai_provider,
             "ai_model": ai_model,
             "platform": platform,
             "extra_instructions": extra_instructions,
+            "job_name": job_name,
             "input_file": input_file,
             "output_file": output_file,
         }

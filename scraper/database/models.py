@@ -10,7 +10,6 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
-    String,
     Text,
     UniqueConstraint,
     create_engine,
@@ -26,8 +25,9 @@ class ProcessingJob(Base):
 
     __tablename__ = "processing_jobs"
 
-    job_id = Column(String(50), primary_key=True)
-    status = Column(String(20), nullable=False, default="pending")
+    job_id = Column(Text, primary_key=True)
+    job_name = Column(Text, nullable=True)
+    status = Column(Text, nullable=False, default="pending")
     # pending, processing, completed, failed, cancelled
     total_urls = Column(Integer, nullable=False)
     processed_urls = Column(Integer, default=0)
@@ -46,7 +46,7 @@ class ProcessingJob(Base):
     batches = relationship("ProcessingBatch", back_populates="job", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<ProcessingJob {self.job_id} ({self.status})>"
+        return f"<ProcessingJob {self.job_id} name={self.job_name} ({self.status})>"
 
 
 class ProcessingBatch(Base):
@@ -54,10 +54,10 @@ class ProcessingBatch(Base):
 
     __tablename__ = "processing_batches"
 
-    batch_id = Column(String(50), primary_key=True)
-    job_id = Column(String(50), ForeignKey("processing_jobs.job_id"), nullable=False)
+    batch_id = Column(Text, primary_key=True)
+    job_id = Column(Text, ForeignKey("processing_jobs.job_id"), nullable=False)
     batch_number = Column(Integer, nullable=False)
-    status = Column(String(20), nullable=False, default="pending")
+    status = Column(Text, nullable=False, default="pending")
     # pending, processing, completed, failed
     task_count = Column(Integer, nullable=False)
     success_count = Column(Integer, default=0)
@@ -81,12 +81,12 @@ class ProcessingTask(Base):
 
     __tablename__ = "processing_tasks"
 
-    task_id = Column(String(50), primary_key=True)
-    job_id = Column(String(50), ForeignKey("processing_jobs.job_id"), nullable=False)
-    batch_id = Column(String(50), ForeignKey("processing_batches.batch_id"), nullable=True)
+    task_id = Column(Text, primary_key=True)
+    job_id = Column(Text, ForeignKey("processing_jobs.job_id"), nullable=False)
+    batch_id = Column(Text, ForeignKey("processing_batches.batch_id"), nullable=True)
     original_url = Column(Text, nullable=False)
     batch_number = Column(Integer, nullable=False)
-    status = Column(String(20), nullable=False, default="queued")
+    status = Column(Text, nullable=False, default="queued")
     # queued, scraping, analyzing, completed, failed
     retry_count = Column(Integer, default=0)
     processing_time = Column(Float, default=0.0)
@@ -112,23 +112,31 @@ class CompanyData(Base):
     __tablename__ = "company_data"
 
     company_id = Column(Integer, primary_key=True, autoincrement=True)
-    task_id = Column(String(50), ForeignKey("processing_tasks.task_id"), nullable=False)
+    task_id = Column(Text, ForeignKey("processing_tasks.task_id"), nullable=False)
     original_url = Column(Text, nullable=False)
-    company_name = Column(String(255), nullable=True)
+    company_name = Column(Text, nullable=True)
     company_url = Column(Text, nullable=True)
     location = Column(Text, nullable=True)
-    industry = Column(String(255), nullable=True)
-    company_size = Column(String(100), nullable=True)
+    industry = Column(Text, nullable=True)
+    company_size = Column(Text, nullable=True)
     # '1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000', '5000+'
-    segmentation = Column(String(50), nullable=True)
+    segmentation = Column(Text, nullable=True)
     # 'Enterprise', 'Mid-market', 'Small-mid'
     salesforce_products = Column(JSON, default=[])
     key_persons = relationship("KeyPerson", back_populates="company", cascade="all, delete-orphan")
     raw_scraped_text = Column(Text, nullable=True)
     ai_analysis = Column(Text, nullable=True)
     confidence_score = Column(Float, default=0.0)
-    processing_status = Column(String(20), default="pending")
+    processing_status = Column(Text, default="pending")
     error_message = Column(Text, nullable=True)
+    
+    # Smartlead enrichment fields
+    smartlead_enrichment = Column(JSON, nullable=True)  # Full Smartlead API response
+    enrichment_status = Column(Text, default="pending")  # pending/processing/enriched/failed
+    enrichment_retry_count = Column(Integer, default=0)
+    enrichment_last_error = Column(Text, nullable=True)
+    enrichment_updated_at = Column(DateTime, nullable=True)
+    
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -148,8 +156,8 @@ class KeyPerson(Base):
 
     person_id = Column(Integer, primary_key=True, autoincrement=True)
     company_id = Column(Integer, ForeignKey("company_data.company_id", ondelete="CASCADE"), nullable=False)
-    name = Column(String(255), nullable=False)
-    title = Column(String(255), nullable=True)
+    name = Column(Text, nullable=False)
+    title = Column(Text, nullable=True)
     contact = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 

@@ -5,24 +5,28 @@ import tempfile
 import time
 from io import BytesIO
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any
 
 import pandas as pd
 import streamlit as st
 from sqlalchemy.orm import Session
 
 from scraper.bulk_processor import ExcelProcessor, PLATFORM_CONFIGS, process_excel_file_with_db
-from scraper.database import DatabaseManager
+from scraper.database import DatabaseManager, get_database_url
 from scraper.models import BulkJob
+from scraper.ui_styles import apply_app_shell_styles
 
 
-def build_export_dataframes(results: List[dict]) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Build company and key person export dataframes from job results."""
+def build_export_dataframes(results: List[dict]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Build company, key person, and enriched contact export dataframes from job results."""
     company_rows = []
     key_person_rows = []
+    enriched_contact_rows = []
 
     for result in results:
         product_values = result.get("platform_products") or result.get("salesforce_products", [])
+        enrichment_payload: dict[str, Any] = result.get("smartlead_enrichment") or {}
+        enrichment_stats = enrichment_payload.get("stats") or {}
         company_rows.append({
             "Original_URL": result.get("original_url", ""),
             "Company_Name": result.get("company_name", ""),
@@ -33,6 +37,9 @@ def build_export_dataframes(results: List[dict]) -> tuple[pd.DataFrame, pd.DataF
             "Segmentation": result.get("segmentation", ""),
             "Platform_Products": ", ".join(product_values),
             "Confidence_Score": result.get("confidence_score", 0.0),
+            "Enrichment_Status": result.get("enrichment_status", "pending"),
+            "Enriched_Contacts": enrichment_stats.get("contacts_found", 0),
+            "Valid_Emails": enrichment_stats.get("valid_emails_found", 0),
         })
 
         for person in result.get("key_persons", []):
@@ -45,15 +52,36 @@ def build_export_dataframes(results: List[dict]) -> tuple[pd.DataFrame, pd.DataF
                 "Contact": person.get("contact", ""),
             })
 
+        for contact in enrichment_payload.get("contacts_enriched", []) or []:
+            enriched_contact_rows.append({
+                "Company_Name": result.get("company_name", ""),
+                "Company_URL": result.get("company_url", ""),
+                "First_Name": contact.get("firstName", ""),
+                "Last_Name": contact.get("lastName", ""),
+                "Title": contact.get("title", ""),
+                "LinkedIn": contact.get("linkedin", ""),
+                "Email": contact.get("email_id", ""),
+                "Verification_Status": contact.get("verification_status", ""),
+                "Email_Status": contact.get("email_status", ""),
+                "Email_Source": contact.get("email_source", ""),
+            })
+
     company_df = pd.DataFrame(company_rows)
     key_person_df = pd.DataFrame(key_person_rows)
+    enriched_contacts_df = pd.DataFrame(enriched_contact_rows)
 
     if key_person_df.empty:
         key_person_df = pd.DataFrame(columns=[
             "Original_URL", "Company_Name", "Company_URL", "Person_Name", "Title", "Contact"
         ])
 
-    return company_df, key_person_df
+    if enriched_contacts_df.empty:
+        enriched_contacts_df = pd.DataFrame(columns=[
+            "Company_Name", "Company_URL", "First_Name", "Last_Name", "Title", "LinkedIn",
+            "Email", "Verification_Status", "Email_Status", "Email_Source"
+        ])
+
+    return company_df, key_person_df, enriched_contacts_df
 
 
 def dataframe_to_excel_bytes(df: pd.DataFrame, sheet_name: str) -> bytes:
@@ -72,11 +100,11 @@ def render_job_downloads(job_id: str, db: DatabaseManager, file_prefix: str, ren
         st.info("No saved company results available for download yet.")
         return
 
-    company_df, key_person_df = build_export_dataframes(results)
+    company_df, key_person_df, enriched_contacts_df = build_export_dataframes(results)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     st.markdown("### 📥 Download Processed Data")
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         st.download_button(
@@ -98,25 +126,37 @@ def render_job_downloads(job_id: str, db: DatabaseManager, file_prefix: str, ren
             key=f"download_key_persons_{job_id}_{render_context}",
         )
 
+    with col3:
+        st.download_button(
+            label="📥 Download Enriched Contacts",
+            data=dataframe_to_excel_bytes(enriched_contacts_df, "EnrichedContacts"),
+            file_name=f"{file_prefix}_enriched_contacts_{timestamp}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True,
+            key=f"download_enriched_contacts_{job_id}_{render_context}",
+        )
+
 # Page configuration
 st.set_page_config(
-    page_title="Bulk URL Processing",
+    page_title="Batch URL Pipeline",
     page_icon="📊",
     layout="wide"
 )
+apply_app_shell_styles("Batch URL")
 
 # Initialize session state
+db_url = get_database_url()
+
 if "db_manager" not in st.session_state:
-    st.session_state.db_manager = DatabaseManager()
+    st.session_state.db_manager = DatabaseManager(db_url)
 
 if "current_job_id" not in st.session_state:
     st.session_state.current_job_id = None
 
 # ── Page Header ──────────────────────────────────────────────────────────────
-st.title("📊 Bulk URL Processing with Database")
+st.title("📊 Batch URL Processing Workspace")
 st.markdown("""
-Process multiple URLs from an Excel file with intelligent batching, AI analysis, 
-and database persistence for resumable processing.
+Run high-volume URL jobs with resumable execution, AI extraction, and database-backed history.
 """)
 
 db = st.session_state.db_manager
@@ -198,7 +238,7 @@ with st.sidebar:
 
 # ── Tabs for different sections ───────────────────────────────────────────────
 tab_new_job, tab_job_history, tab_resume = st.tabs(
-    ["🚀 New Processing Job", "📋 Job History", "▶️ Resume Processing"]
+    ["🚀 New Batch Job", "📋 Job Results", "▶️ Resume Job"]
 )
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -206,7 +246,14 @@ tab_new_job, tab_job_history, tab_resume = st.tabs(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 with tab_new_job:
-    st.header("🚀 Start New Processing Job")
+    st.header("🚀 Start New Batch Job")
+
+    job_name = st.text_input(
+        "Job Name",
+        value="",
+        placeholder="e.g., Snowflake EMEA Batch - Apr 2026",
+        help="Optional human-readable label for this processing job.",
+    )
 
     col1, col2 = st.columns([2, 1])
 
@@ -324,9 +371,10 @@ with tab_new_job:
                     ai_provider=ai_provider_lower,
                     ai_model=ai_model,
                     progress_callback=progress_callback,
-                    db_url="sqlite:///webscraper.db",
+                    db_url=db_url,
                     platform=selected_platform,
                     extra_instructions=extra_instructions,
+                    job_name=job_name.strip() or None,
                 )
 
                 st.session_state.current_job_id = job_id
@@ -338,7 +386,7 @@ with tab_new_job:
                 final_stats = db.get_job_stats(job_id)
 
                 with results_container:
-                    st.header("📈 Final Results")
+                    st.header("📈 Final Output")
                     col1, col2, col3, col4 = st.columns(4)
                     with col1:
                         st.metric("Total URLs", final_stats["total_urls"])
@@ -358,6 +406,24 @@ with tab_new_job:
                     """)
 
                     st.success("🎉 **Results ready for download!**")
+
+                    saved_results = db.get_job_results(job_id)
+                    company_df, key_person_df, enriched_contacts_df = build_export_dataframes(saved_results)
+
+                    st.subheader("Company Output")
+                    st.dataframe(company_df, use_container_width=True, hide_index=True)
+
+                    st.subheader("Key People Output")
+                    if key_person_df.empty:
+                        st.info("No key people rows available for this run.")
+                    else:
+                        st.dataframe(key_person_df, use_container_width=True, hide_index=True)
+
+                    st.subheader("Enrichment Output")
+                    if enriched_contacts_df.empty:
+                        st.info("No Smartlead enrichment rows available yet.")
+                    else:
+                        st.dataframe(enriched_contacts_df, use_container_width=True, hide_index=True)
 
                     if os.path.exists(temp_output_path):
                         with open(temp_output_path, "rb") as file:
@@ -390,7 +456,7 @@ with tab_new_job:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 with tab_job_history:
-    st.header("📋 Processing Job History")
+    st.header("📋 Job History & Results")
 
     # Get all jobs
     all_jobs = db.get_all_jobs(limit=100)
@@ -408,7 +474,7 @@ with tab_job_history:
     with st.expander("📥 Download Exports", expanded=True):
         if completed_jobs:
             download_job_options = {
-                f"{job.job_id[:8]} ({job.created_at.strftime('%Y-%m-%d %H:%M')})": job.job_id
+                f"{(job.job_name or 'Untitled Job')} - {job.job_id[:8]} ({job.created_at.strftime('%Y-%m-%d %H:%M')})": job.job_id
                 for job in completed_jobs
             }
             selected_download_label = st.selectbox(
@@ -427,6 +493,7 @@ with tab_job_history:
         for job in all_jobs:
             stats = job_stats_by_id.get(job.job_id, {})
             job_data.append({
+                "Job Name": job.job_name or "Untitled Job",
                 "Job ID": job.job_id[:8],
                 "Status": job.status.upper(),
                 "Total URLs": stats["total_urls"],
@@ -440,6 +507,7 @@ with tab_job_history:
         job_df = st.dataframe(
             [
                 {
+                    "Job Name": d["Job Name"],
                     "Job ID": d["Job ID"],
                     "Status": d["Status"],
                     "Progress": d["Progress"],
@@ -457,7 +525,7 @@ with tab_job_history:
         selected_job_idx = st.selectbox(
             "Select a job to view details",
             range(len(job_data)),
-            format_func=lambda i: f"{job_data[i]['Job ID']} - {job_data[i]['Status']}"
+            format_func=lambda i: f"{job_data[i]['Job Name']} | {job_data[i]['Job ID']} - {job_data[i]['Status']}"
         )
 
         selected_job = job_data[selected_job_idx]
@@ -470,6 +538,7 @@ with tab_job_history:
 
             with col1:
                 st.markdown(f"""
+                **Job Name:** {stats.get('job_name') or 'Untitled Job'}
                 **Job ID:** `{job_id}`
                 **Status:** {stats['status'].upper()}
                 **Total URLs:** {stats['total_urls']}
@@ -487,6 +556,23 @@ with tab_job_history:
             # Download results if completed
             if stats['status'] == 'completed':
                 st.success("✓ This job is completed. Results are available.")
+                historical_results = db.get_job_results(job_id)
+                hist_company_df, hist_key_person_df, hist_enriched_contacts_df = build_export_dataframes(historical_results)
+
+                st.subheader("Company Output")
+                st.dataframe(hist_company_df, use_container_width=True, hide_index=True)
+
+                st.subheader("Key People Output")
+                if hist_key_person_df.empty:
+                    st.info("No key people rows available for this job.")
+                else:
+                    st.dataframe(hist_key_person_df, use_container_width=True, hide_index=True)
+
+                st.subheader("Enrichment Output")
+                if hist_enriched_contacts_df.empty:
+                    st.info("No Smartlead enrichment rows available for this job yet.")
+                else:
+                    st.dataframe(hist_enriched_contacts_df, use_container_width=True, hide_index=True)
                 render_job_downloads(job_id, db, f"job_{job_id[:8]}", render_context="history_details")
     else:
         st.info("No processing jobs found. Start a new job to see history.")
@@ -507,7 +593,7 @@ with tab_resume:
         st.info("🔄 Select a job to resume processing")
 
         job_options = {
-            f"{j.job_id[:8]} - {j.status.upper()} ({db.get_job_stats(j.job_id)['completed_urls']}/{j.total_urls})": j.job_id
+            f"{(j.job_name or 'Untitled Job')} | {j.job_id[:8]} - {j.status.upper()} ({db.get_job_stats(j.job_id)['completed_urls']}/{j.total_urls})": j.job_id
             for j in pending_jobs
         }
 

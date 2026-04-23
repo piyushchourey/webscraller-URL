@@ -206,6 +206,24 @@ pip install -r requirements.txt
 echo "GEMINI_API_KEY=your_api_key_here" > .env
 ```
 
+### Database Configuration (SQLite or PostgreSQL)
+
+The app now reads DB connection from `DATABASE_URL` (or `DB_URL`).
+
+```bash
+# SQLite (default)
+DATABASE_URL=sqlite:///webscraper.db
+
+# PostgreSQL
+DATABASE_URL=postgresql+psycopg2://user:password@host:5432/database_name
+```
+
+### Migrate existing SQLite records to PostgreSQL
+
+```bash
+python scripts/migrate_sqlite_to_postgres.py --source "sqlite:///webscraper.db" --target "postgresql+psycopg2://user:password@host:5432/database_name"
+```
+
 ## 📊 Bulk Processing
 
 Process hundreds of URLs from Excel files with intelligent batching and structured data extraction.
