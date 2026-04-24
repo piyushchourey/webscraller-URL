@@ -3,10 +3,12 @@
 import os
 import subprocess
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 import streamlit as st
 
 from scraper.database import DatabaseManager, get_database_url
@@ -49,14 +51,37 @@ def _build_enrichment_tables(job_results: list[dict[str, Any]]) -> tuple[list[di
     company_rows: list[dict[str, Any]] = []
     contact_rows: list[dict[str, Any]] = []
 
+    def _first_non_empty(items: list[dict[str, Any]], key: str) -> str:
+        for item in items:
+            value = item.get(key)
+            if value not in (None, ""):
+                return str(value)
+        return ""
+
     for row in job_results:
         enrichment_data = row.get("smartlead_enrichment") or {}
         stats = enrichment_data.get("stats") or {}
+        contacts_enriched = enrichment_data.get("contacts_enriched", []) or []
+        search_contacts = ((enrichment_data.get("search_contacts") or {}).get("data") or {}).get("list") or []
+
+        smartlead_headcount = (
+            _first_non_empty(contacts_enriched, "companyHeadCount")
+            or _first_non_empty(search_contacts, "companyHeadCount")
+        )
+        smartlead_revenue = (
+            _first_non_empty(contacts_enriched, "companyRevenue")
+            or _first_non_empty(search_contacts, "companyRevenue")
+        )
+
         company_rows.append(
             {
                 "Company": row.get("company_name") or "",
                 "Domain": row.get("company_url") or "",
                 "Location": row.get("location") or "",
+                "Industry": row.get("industry") or "",
+                "Company_Size": smartlead_headcount or row.get("company_size") or "",
+                "Company_Revenue": smartlead_revenue,
+                "Segment": row.get("segmentation") or "",
                 "Enrichment_Status": row.get("enrichment_status") or "pending",
                 "Contacts_Found": stats.get("contacts_found", 0),
                 "Valid_Emails": stats.get("valid_emails_found", 0),
@@ -64,7 +89,7 @@ def _build_enrichment_tables(job_results: list[dict[str, Any]]) -> tuple[list[di
             }
         )
 
-        for contact in enrichment_data.get("contacts_enriched", []) or []:
+        for contact in contacts_enriched:
             contact_rows.append(
                 {
                     "Company": row.get("company_name") or "",
@@ -80,6 +105,51 @@ def _build_enrichment_tables(job_results: list[dict[str, Any]]) -> tuple[list[di
 
     return company_rows, contact_rows
 
+
+def _get_email_verification_counts(contact_rows: list[dict[str, Any]]) -> tuple[int, int]:
+    """Return valid and invalid email counts from contact-level rows."""
+    valid_count = 0
+    invalid_count = 0
+
+    for row in contact_rows:
+        status = str(row.get("Verification_Status") or "").strip().lower()
+        if status == "valid":
+            valid_count += 1
+        elif status:
+            invalid_count += 1
+
+    return valid_count, invalid_count
+
+
+def _render_kpi_card(label: str, value: Any, tone: str = "") -> None:
+    """Render compact KPI card."""
+    tone_class = f"ui-{tone}" if tone else ""
+    st.markdown(
+        f"""
+        <div class="ui-kpi-card">
+            <div class="ui-kpi-label">{label}</div>
+            <div class="ui-kpi-value {tone_class}">{value}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_status_chart(stats: dict[str, int]) -> None:
+    """Render enrichment status bar chart."""
+    chart_df = pd.DataFrame(
+        {
+            "Status": ["Pending", "Processing", "Enriched", "Failed"],
+            "Count": [
+                stats.get("pending", 0),
+                stats.get("processing", 0),
+                stats.get("enriched", 0),
+                stats.get("failed", 0),
+            ],
+        }
+    )
+    st.bar_chart(chart_df.set_index("Status"), height=230)
+
 # Page configuration
 st.set_page_config(
     page_title="Smartlead Enrichment Workspace",
@@ -89,7 +159,15 @@ st.set_page_config(
 apply_app_shell_styles("Enrichment")
 
 st.title("🔍 Smartlead Enrichment Workspace")
-st.markdown("Run and monitor job-wise Smartlead enrichment with clear structured outputs.")
+st.markdown(
+    """
+    <div class="ui-hero">
+        <strong>Enrich company and decision-maker data in one place.</strong><br/>
+        Select a completed batch job, start enrichment, and monitor progress with structured outputs.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 # Initialize database
 db = DatabaseManager()
@@ -97,7 +175,7 @@ enrichment_mgr = EnrichmentManager(db)
 
 # Sidebar configuration
 with st.sidebar:
-    st.header("⚙️ Configuration")
+    st.header("⚙️ Enrichment Settings")
     
     api_key = st.text_input(
         "Smartlead API Key",
@@ -107,7 +185,7 @@ with st.sidebar:
     )
     
     rate_limit = st.slider(
-        "API Rate Limit (calls/min)",
+        "Rate Limit (calls/min)",
         min_value=10,
         max_value=120,
         value=60,
@@ -127,7 +205,8 @@ tab1, tab2, tab3 = st.tabs(["🎯 Run Enrichment", "📊 Status Monitor", "📋 
 # ═════════════════════════════════════════════════════════════════════════════
 
 with tab1:
-    st.header("Start Job Enrichment")
+    st.header("Start Data Enrichment")
+    st.caption("Flow: Choose Job → Configure Options → Start Enrichment → Track Live Progress")
     
     # Get completed jobs
     all_jobs = db.get_all_jobs(limit=100)
@@ -153,70 +232,65 @@ with tab1:
         # Get job details
         job_info = enrichment_mgr.get_job_info(selected_job_id)
         stats = enrichment_mgr.get_enrichment_stats_for_job(selected_job_id)
+
+        total_companies = stats.get("total") or (
+            stats.get("pending", 0)
+            + stats.get("processing", 0)
+            + stats.get("enriched", 0)
+            + stats.get("failed", 0)
+        )
+        completion_ratio = (stats.get("enriched", 0) / total_companies) if total_companies else 0
         
         # Display job info
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric("Job Name", job_info["job_name"])
+            _render_kpi_card("Selected Job", job_info["job_name"])
         with col2:
-            st.metric("Created", job_info["created_at"].strftime("%Y-%m-%d %H:%M"))
+            _render_kpi_card("Created", job_info["created_at"].strftime("%Y-%m-%d %H:%M"))
         with col3:
-            st.metric("Total Companies", job_info["total_urls"])
+            _render_kpi_card("Total Companies", job_info["total_urls"])
         with col4:
-            st.metric("Status", job_info["status"].upper())
+            _render_kpi_card("Job Status", job_info["status"].upper())
         
         st.divider()
+        st.progress(completion_ratio, text=f"Enrichment completion: {completion_ratio*100:.1f}%")
         
         # Enrichment status breakdown
-        st.subheader("Enrichment Status Breakdown")
+        st.subheader("Status Overview")
         
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric(
-                "Pending",
-                stats["pending"],
-                delta=f"({stats['pending'] / stats['total'] * 100:.1f}%)" if stats["total"] > 0 else "0%",
-            )
+            _render_kpi_card("Pending", stats["pending"], "warning")
         with col2:
-            st.metric(
-                "Processing",
-                stats["processing"],
-                delta=f"({stats['processing'] / stats['total'] * 100:.1f}%)" if stats["total"] > 0 else "0%",
-            )
+            _render_kpi_card("Processing", stats["processing"])
         with col3:
-            st.metric(
-                "Enriched",
-                stats["enriched"],
-                delta=f"({stats['enriched'] / stats['total'] * 100:.1f}%)" if stats["total"] > 0 else "0%",
-            )
+            _render_kpi_card("Enriched", stats["enriched"], "success")
         with col4:
-            st.metric(
-                "Failed",
-                stats["failed"],
-                delta=f"({stats['failed'] / stats['total'] * 100:.1f}%)" if stats["total"] > 0 else "0%",
-            )
+            _render_kpi_card("Failed", stats["failed"], "danger")
+
+        _render_status_chart(stats)
         
         st.divider()
         
         # Enrichment options
-        st.subheader("🚀 Enrichment Options")
-        
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            dry_run = st.checkbox(
-                "Dry Run Mode",
-                value=False,
-                help="Preview what would be enriched without making API calls",
-            )
-        
-        with col2:
-            retry_failed = st.checkbox(
-                "Retry Failed",
-                value=False,
-                help="Retry previously failed enrichments",
-            )
-        
+        st.subheader("Enrichment Controls")
+        with st.expander("Advanced Options", expanded=False):
+            col1, col2 = st.columns([2, 1])
+
+            with col1:
+                dry_run = st.checkbox(
+                    "Preview only (no API calls)",
+                    value=False,
+                    help="Show what would be enriched without calling Smartlead.",
+                )
+
+            with col2:
+                retry_failed = st.checkbox(
+                    "Retry failed records",
+                    value=False,
+                    help="Re-run companies marked as failed.",
+                )
+
         st.divider()
         
         # Action buttons
@@ -224,7 +298,7 @@ with tab1:
         
         with col1:
             start_button = st.button(
-                "🚀 Start Enrichment",
+                "🚀 Start Data Enrichment",
                 key="start_enrichment",
                 use_container_width=True,
                 type="primary",
@@ -232,7 +306,7 @@ with tab1:
         
         with col2:
             view_button = st.button(
-                "👁️ Preview",
+                "👁️ Preview Queue",
                 key="preview_enrichment",
                 use_container_width=True,
             )
@@ -241,7 +315,7 @@ with tab1:
         if view_button:
             companies = enrichment_mgr.get_pending_companies_for_job(selected_job_id)
             if companies:
-                st.info(f"Preview: {len(companies)} companies pending enrichment")
+                st.info(f"{len(companies)} companies are currently queued for enrichment.")
                 preview_rows = [
                     {
                         "Company": company.get("company_name") or "",
@@ -253,14 +327,14 @@ with tab1:
                 ]
                 st.dataframe(preview_rows, use_container_width=True, hide_index=True)
             else:
-                st.info("No pending companies to enrich for this job")
+                st.info("No pending companies to enrich for this job.")
         
         # Handle enrichment start
         if start_button:
             if not api_key:
-                st.error("❌ Please provide Smartlead API Key in sidebar")
+                st.error("❌ Add your Smartlead API key in the sidebar to continue.")
             elif stats["pending"] == 0 and not retry_failed:
-                st.warning("⚠️ No pending companies to enrich. Use 'Retry Failed' to retry failed enrichments.")
+                st.warning("⚠️ No pending records. Enable 'Retry failed records' to reprocess failures.")
             else:
                 # Prepare enrichment parameters
                 enrichment_params = {
@@ -278,11 +352,11 @@ with tab1:
                 
                 # Display progress
                 st.success(
-                    f"✅ Enrichment started for {job_info['job_name']}\n\n"
+                    f"✅ Data enrichment started for {job_info['job_name']}\n\n"
                     f"- Mode: {'Dry Run' if dry_run else 'Full Enrichment'}\n"
                     f"- Companies to process: {stats['pending']}\n"
                     f"- API Rate Limit: {rate_limit} calls/min\n\n"
-                    f"Refresh page in a few moments to see progress..."
+                    f"Progress updates are shown below and in Status Monitor."
                 )
                 
                 st.info(
@@ -317,13 +391,14 @@ with tab1:
                     st.session_state.enrichment_started_at = datetime.now().isoformat()
 
                     st.success(
-                        f"🚀 Worker started (PID: {process.pid}). Track progress in Status Monitor and live log below."
+                        f"🚀 Worker started (PID: {process.pid}). Track progress in Status Monitor and Live Worker Log."
                     )
                 except Exception as exc:
                     st.error(f"❌ Failed to start enrichment worker: {exc}")
 
-                st.caption(f"Command: `{' '.join(cmd)}`")
-                st.caption(f"Log file: `{log_path}`")
+                with st.expander("Technical Details", expanded=False):
+                    st.caption(f"Command: `{' '.join(cmd)}`")
+                    st.caption(f"Log file: `{log_path}`")
 
         process = st.session_state.get("enrichment_process")
         process_job_id = st.session_state.get("enrichment_job_id")
@@ -342,7 +417,7 @@ with tab1:
 
             if process_log_path:
                 log_text = _tail_file(Path(process_log_path), max_lines=40)
-                with st.expander("Worker Log (latest lines)", expanded=return_code is None):
+                with st.expander("Live Worker Log", expanded=return_code is None):
                     if log_text:
                         st.code(log_text, language="text")
                     else:
@@ -354,6 +429,17 @@ with tab1:
 
 with tab2:
     st.header("📊 Enrichment Status Monitor")
+
+    refresh_col1, refresh_col2, refresh_col3 = st.columns([1, 1, 4])
+    with refresh_col1:
+        refresh_now = st.button("🔄 Refresh", key="refresh_status_monitor", use_container_width=True)
+    with refresh_col2:
+        auto_refresh = st.checkbox("Auto refresh", key="auto_refresh_monitor", value=False)
+    with refresh_col3:
+        st.caption("Tip: enable auto refresh to keep progress live while enrichment is running.")
+
+    if refresh_now:
+        st.rerun()
     
     # Get all jobs with their enrichment stats
     all_jobs = db.get_all_jobs(limit=50)
@@ -388,7 +474,12 @@ with tab2:
             status_data.append({
                 "Job Name": job.job_name or "Untitled",
                 "Job ID": job.job_id[:8],
-                "Status": job.status.upper(),
+                "Status": {
+                    "completed": "✅ COMPLETED",
+                    "processing": "🟡 PROCESSING",
+                    "pending": "⏳ PENDING",
+                    "failed": "❌ FAILED",
+                }.get((job.status or "").lower(), (job.status or "unknown").upper()),
                 "Total": total_count,
                 "Pending": stats["pending"],
                 "Processing": stats["processing"],
@@ -464,8 +555,14 @@ with tab2:
         st.markdown("**Contact-Level Output**")
         if contact_rows:
             st.dataframe(contact_rows, use_container_width=True, hide_index=True)
+            valid_count, invalid_count = _get_email_verification_counts(contact_rows)
+            st.caption(f"Email verification summary: ✅ Valid = {valid_count} | ❌ Invalid/Other = {invalid_count}")
         else:
             st.info("No enriched contacts available for this job yet.")
+
+    if auto_refresh:
+        time.sleep(5)
+        st.rerun()
 
 # ═════════════════════════════════════════════════════════════════════════════
 # TAB 3: History
@@ -513,6 +610,8 @@ with tab3:
                 st.markdown("**Contact-Level Output**")
                 if contact_rows:
                     st.dataframe(contact_rows, use_container_width=True, hide_index=True)
+                    valid_count, invalid_count = _get_email_verification_counts(contact_rows)
+                    st.caption(f"Email verification summary: ✅ Valid = {valid_count} | ❌ Invalid/Other = {invalid_count}")
                 else:
                     st.caption("No contact-level enrichment output recorded.")
 

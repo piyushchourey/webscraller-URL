@@ -155,14 +155,20 @@ if "current_job_id" not in st.session_state:
 
 # ── Page Header ──────────────────────────────────────────────────────────────
 st.title("📊 Batch URL Processing Workspace")
-st.markdown("""
-Run high-volume URL jobs with resumable execution, AI extraction, and database-backed history.
-""")
+st.markdown(
+    """
+    <div class="ui-hero">
+        <strong>Process URL lists at scale with consistent extraction quality.</strong><br/>
+        Upload Excel URLs, run AI-powered extraction, and review structured outputs for companies and contacts.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 db = st.session_state.db_manager
 
 with st.sidebar:
-    st.header("⚙️ Processing Configuration")
+    st.header("⚙️ Batch Settings")
 
     ai_provider = st.radio(
         "AI Provider",
@@ -185,35 +191,35 @@ with st.sidebar:
             help="Available Gemini models"
         )
 
-    st.subheader("Batch Settings")
-    batch_size = st.slider(
-        "URLs per batch",
-        min_value=10,
-        max_value=100,
-        value=50,
-        step=10,
-        help="Smaller batches = slower but more reliable"
-    )
+    with st.expander("Processing Performance", expanded=True):
+        batch_size = st.slider(
+            "URLs per batch",
+            min_value=10,
+            max_value=100,
+            value=50,
+            step=10,
+            help="Smaller batches are slower but more reliable",
+        )
 
-    max_workers = st.slider(
-        "Concurrent workers per batch",
-        min_value=1,
-        max_value=10,
-        value=3,
-        step=1,
-        help="Higher values = faster but may hit rate limits"
-    )
+        max_workers = st.slider(
+            "Concurrent workers",
+            min_value=1,
+            max_value=10,
+            value=3,
+            step=1,
+            help="Higher values are faster but may hit rate limits",
+        )
 
-    batch_delay = st.slider(
-        "Delay between batches (seconds)",
-        min_value=0,
-        max_value=30,
-        value=5,
-        step=1,
-        help="Prevent overwhelming target servers"
-    )
+        batch_delay = st.slider(
+            "Delay between batches (seconds)",
+            min_value=0,
+            max_value=30,
+            value=5,
+            step=1,
+            help="Protect target websites and avoid bursts",
+        )
 
-    st.subheader("🎯 Platform & Prompt")
+    st.subheader("🎯 Extraction Target")
     platform_labels = {config["label"]: key for key, config in PLATFORM_CONFIGS.items()}
     selected_platform_label = st.selectbox(
         "Target Platform",
@@ -224,7 +230,7 @@ with st.sidebar:
     selected_platform = platform_labels[selected_platform_label]
 
     extra_instructions = st.text_area(
-        "Extra Prompt Instructions",
+        "Additional extraction instructions",
         value="",
         height=140,
         placeholder=(
@@ -246,10 +252,11 @@ tab_new_job, tab_job_history, tab_resume = st.tabs(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 with tab_new_job:
-    st.header("🚀 Start New Batch Job")
+    st.header("🚀 Start Data Processing")
+    st.caption("Flow: Job Setup → File Upload → Run Processing → Review Final Output")
 
     job_name = st.text_input(
-        "Job Name",
+        "Batch job name",
         value="",
         placeholder="e.g., Snowflake EMEA Batch - Apr 2026",
         help="Optional human-readable label for this processing job.",
@@ -260,7 +267,7 @@ with tab_new_job:
     with col1:
         # File upload
         uploaded_file = st.file_uploader(
-            "Upload Excel file with URLs (must have 'URL' column)",
+            "Upload Excel file (must include `URL` column)",
             type=["xlsx", "xls"],
             help="Excel file should contain a 'URL' column with valid HTTP(S) URLs"
         )
@@ -362,7 +369,7 @@ with tab_new_job:
                 success_rate_metric.metric("Success Rate", f"{success_rate:.1f}%")
 
             try:
-                status_text.markdown("🚀 **Starting bulk processing with database persistence...**")
+                status_text.markdown("🚀 **Starting data processing pipeline...**")
 
                 job_id = process_excel_file_with_db(
                     input_file=temp_input_path,
@@ -380,13 +387,14 @@ with tab_new_job:
                 st.session_state.current_job_id = job_id
 
                 progress_bar.progress(1.0)
-                status_text.markdown("✅ **Processing completed!**")
+                status_text.markdown("✅ **Processing completed successfully**")
 
                 # Fetch final statistics
                 final_stats = db.get_job_stats(job_id)
 
                 with results_container:
                     st.header("📈 Final Output")
+                    st.caption("Review and download company, key people, and enrichment-ready outputs.")
                     col1, col2, col3, col4 = st.columns(4)
                     with col1:
                         st.metric("Total URLs", final_stats["total_urls"])

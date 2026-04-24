@@ -1,0 +1,777 @@
+C:\Users\MindRuby\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.4.0.post2)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+2026-04-24 11:29:08,474 - __main__ - INFO - Database: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+
+2026-04-24 11:29:08,681 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-24 11:29:08,702 - __main__ - INFO - ======================================================================
+2026-04-24 11:29:08,702 - __main__ - INFO - Starting enrichment for Job: Salesforce Customer-20April
+2026-04-24 11:29:08,703 - __main__ - INFO - Job ID: 6e314184-282a-4759-a3bb-498fc440a584
+2026-04-24 11:29:08,703 - __main__ - INFO - Status: completed
+2026-04-24 11:29:08,703 - __main__ - INFO - Dry Run: False
+2026-04-24 11:29:08,703 - __main__ - INFO - ======================================================================
+2026-04-24 11:29:08,708 - __main__ - INFO - Enrichment Status: 144 pending, 0 processing, 0 enriched, 0 failed out of 144 total
+2026-04-24 11:29:08,723 - scraper.enrichment.manager - INFO - Found 144 pending companies for job 6e314184-282a-4759-a3bb-498fc440a584
+2026-04-24 11:29:08,724 - __main__ - INFO - 
+Processing 144 pending companies...
+
+2026-04-24 11:29:08,724 - __main__ - INFO - [1/144] Processing: Domain
+2026-04-24 11:29:08,733 - scraper.enrichment.manager - INFO - Marked company 98 as processing enrichment
+2026-04-24 11:29:18,328 - scraper.enrichment.manager - INFO - Successfully enriched company 98
+2026-04-24 11:29:18,346 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:29:18,346 - __main__ - INFO - [2/144] Processing: One NZ
+2026-04-24 11:29:18,348 - scraper.enrichment.manager - INFO - Marked company 158 as processing enrichment
+2026-04-24 11:29:31,301 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:29:43,582 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:29:49,856 - scraper.enrichment.manager - INFO - Successfully enriched company 158
+2026-04-24 11:29:49,862 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:29:49,862 - __main__ - INFO - [3/144] Processing: Nine
+2026-04-24 11:29:49,864 - scraper.enrichment.manager - INFO - Marked company 155 as processing enrichment
+2026-04-24 11:30:01,607 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:30:10,629 - scraper.enrichment.manager - INFO - Successfully enriched company 155
+2026-04-24 11:30:10,635 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:30:10,635 - __main__ - INFO - [4/144] Processing: RBC Wealth Management - U.S.
+2026-04-24 11:30:10,639 - scraper.enrichment.manager - INFO - Marked company 177 as processing enrichment
+2026-04-24 11:30:22,350 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:30:33,676 - scraper.enrichment.manager - INFO - Successfully enriched company 177
+2026-04-24 11:30:33,683 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:30:33,683 - __main__ - INFO - [5/144] Processing: Prudential Financial
+2026-04-24 11:30:33,687 - scraper.enrichment.manager - INFO - Marked company 166 as processing enrichment
+2026-04-24 11:30:46,285 - scraper.enrichment.manager - INFO - Successfully enriched company 166
+2026-04-24 11:30:46,291 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:30:46,291 - __main__ - INFO - [6/144] Processing: Fisher & Paykel
+2026-04-24 11:30:46,293 - scraper.enrichment.manager - INFO - Marked company 107 as processing enrichment
+2026-04-24 11:30:57,836 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:31:09,810 - scraper.enrichment.manager - INFO - Successfully enriched company 107
+2026-04-24 11:31:09,814 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:31:09,814 - __main__ - INFO - [7/144] Processing: Fujitsu
+2026-04-24 11:31:09,817 - scraper.enrichment.manager - INFO - Marked company 112 as processing enrichment
+2026-04-24 11:31:25,399 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:31:37,655 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:31:51,931 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-24 11:31:51,931 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-24 11:31:51,934 - scraper.enrichment.manager - INFO - Successfully enriched company 112
+2026-04-24 11:31:51,947 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:31:51,947 - __main__ - INFO - [8/144] Processing: Finnair
+2026-04-24 11:31:51,948 - scraper.enrichment.manager - INFO - Marked company 105 as processing enrichment
+2026-04-24 11:32:00,223 - scraper.enrichment.manager - INFO - Successfully enriched company 105
+2026-04-24 11:32:00,229 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:32:00,229 - __main__ - INFO - [9/144] Processing: TripADeal
+2026-04-24 11:32:00,231 - scraper.enrichment.manager - INFO - Marked company 198 as processing enrichment
+2026-04-24 11:32:11,782 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:32:24,053 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:32:28,540 - scraper.enrichment.manager - INFO - Successfully enriched company 198
+2026-04-24 11:32:28,545 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:32:28,545 - __main__ - INFO - [10/144] Processing: Heathrow Airport
+2026-04-24 11:32:28,546 - scraper.enrichment.manager - INFO - Marked company 121 as processing enrichment
+2026-04-24 11:32:42,207 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:32:44,937 - scraper.enrichment.manager - INFO - Successfully enriched company 121
+2026-04-24 11:32:44,942 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:32:44,942 - __main__ - INFO - [11/144] Processing: SharkNinja
+2026-04-24 11:32:44,943 - scraper.enrichment.manager - INFO - Marked company 181 as processing enrichment
+2026-04-24 11:32:52,623 - scraper.enrichment.manager - INFO - Successfully enriched company 181
+2026-04-24 11:32:52,629 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:32:52,629 - __main__ - INFO - [12/144] Processing: Indeed
+2026-04-24 11:32:52,632 - scraper.enrichment.manager - INFO - Marked company 123 as processing enrichment
+2026-04-24 11:33:01,896 - scraper.enrichment.manager - INFO - Successfully enriched company 123
+2026-04-24 11:33:01,903 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:33:01,903 - __main__ - INFO - [13/144] Processing: Fisher & Paykel
+2026-04-24 11:33:01,904 - scraper.enrichment.manager - INFO - Marked company 106 as processing enrichment
+2026-04-24 11:33:09,246 - scraper.enrichment.manager - INFO - Successfully enriched company 106
+2026-04-24 11:33:09,251 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:33:09,251 - __main__ - INFO - [14/144] Processing: The Adecco Group
+2026-04-24 11:33:09,252 - scraper.enrichment.manager - INFO - Marked company 192 as processing enrichment
+2026-04-24 11:33:22,339 - scraper.enrichment.manager - INFO - Successfully enriched company 192
+2026-04-24 11:33:22,353 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:33:22,354 - __main__ - INFO - [15/144] Processing: Latitude Financial Services
+2026-04-24 11:33:22,354 - scraper.enrichment.manager - INFO - Marked company 132 as processing enrichment
+2026-04-24 11:33:30,511 - scraper.enrichment.manager - INFO - Successfully enriched company 132
+2026-04-24 11:33:30,518 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:33:30,518 - __main__ - INFO - [16/144] Processing: The Royal Automobile Club of Victoria (RACV)
+2026-04-24 11:33:30,520 - scraper.enrichment.manager - INFO - Marked company 173 as processing enrichment
+2026-04-24 11:33:42,628 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:33:54,919 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:34:09,211 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-24 11:34:09,211 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-24 11:34:09,213 - scraper.enrichment.manager - INFO - Successfully enriched company 173
+2026-04-24 11:34:09,217 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:34:09,217 - __main__ - INFO - [17/144] Processing: SEEK
+2026-04-24 11:34:09,218 - scraper.enrichment.manager - INFO - Marked company 180 as processing enrichment
+2026-04-24 11:34:21,984 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:34:34,231 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:34:38,652 - scraper.enrichment.manager - INFO - Successfully enriched company 180
+2026-04-24 11:34:38,656 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:34:38,657 - __main__ - INFO - [18/144] Processing: Salesforce
+2026-04-24 11:34:38,658 - scraper.enrichment.manager - INFO - Marked company 74 as processing enrichment
+2026-04-24 11:34:54,115 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:35:06,400 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:35:10,823 - scraper.enrichment.manager - INFO - Successfully enriched company 74
+2026-04-24 11:35:10,831 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:35:10,831 - __main__ - INFO - [19/144] Processing: MECCA
+2026-04-24 11:35:10,833 - scraper.enrichment.manager - INFO - Marked company 143 as processing enrichment
+2026-04-24 11:35:25,412 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:35:37,705 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:35:52,036 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-24 11:35:52,037 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-24 11:35:52,039 - scraper.enrichment.manager - INFO - Successfully enriched company 143
+2026-04-24 11:35:52,042 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:35:52,043 - __main__ - INFO - [20/144] Processing: R.M.Williams
+2026-04-24 11:35:52,045 - scraper.enrichment.manager - INFO - Marked company 167 as processing enrichment
+2026-04-24 11:36:02,344 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:36:14,610 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:36:30,686 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:36:40,694 - scraper.enrichment.manager - INFO - Successfully enriched company 167
+2026-04-24 11:36:40,697 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:36:40,698 - __main__ - INFO - [21/144] Processing: Xero
+2026-04-24 11:36:40,699 - scraper.enrichment.manager - INFO - Marked company 213 as processing enrichment
+2026-04-24 11:36:52,801 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:36:55,254 - scraper.enrichment.manager - INFO - Successfully enriched company 213
+2026-04-24 11:36:55,259 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:36:55,259 - __main__ - INFO - [22/144] Processing: FedEx
+2026-04-24 11:36:55,261 - scraper.enrichment.manager - INFO - Marked company 104 as processing enrichment
+2026-04-24 11:37:10,512 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:37:22,585 - scraper.enrichment.manager - INFO - Successfully enriched company 104
+2026-04-24 11:37:22,590 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:37:22,590 - __main__ - INFO - [23/144] Processing: Kawasaki Motors Corp., U.S.A., Engines Division
+2026-04-24 11:37:22,592 - scraper.enrichment.manager - INFO - Marked company 130 as processing enrichment
+2026-04-24 11:37:25,367 - scraper.enrichment.manager - WARNING - Failed to enrich company 130: Smartlead API returned no data
+2026-04-24 11:37:25,372 - __main__ - WARNING -   \u26a0\ufe0f  API returned no data
+2026-04-24 11:37:25,372 - __main__ - INFO - [24/144] Processing: Royal Enfield
+2026-04-24 11:37:25,375 - scraper.enrichment.manager - INFO - Marked company 175 as processing enrichment
+2026-04-24 11:37:34,872 - scraper.enrichment.manager - INFO - Successfully enriched company 175
+2026-04-24 11:37:34,879 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:37:34,879 - __main__ - INFO - [25/144] Processing: Wyndham Hotels & Resorts
+2026-04-24 11:37:34,882 - scraper.enrichment.manager - INFO - Marked company 211 as processing enrichment
+2026-04-24 11:37:47,337 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:37:57,025 - scraper.enrichment.manager - INFO - Successfully enriched company 211
+2026-04-24 11:37:57,036 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:37:57,036 - __main__ - INFO - [26/144] Processing: Flight Centre
+2026-04-24 11:37:57,040 - scraper.enrichment.manager - INFO - Marked company 108 as processing enrichment
+2026-04-24 11:38:09,311 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:38:21,575 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:38:26,038 - scraper.enrichment.manager - INFO - Successfully enriched company 108
+2026-04-24 11:38:26,044 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:38:26,044 - __main__ - INFO - [27/144] Processing: Energy Efficiency and Conservation Authority (EECA)
+2026-04-24 11:38:26,046 - scraper.enrichment.manager - INFO - Marked company 99 as processing enrichment
+2026-04-24 11:38:38,490 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:38:40,895 - scraper.enrichment.manager - INFO - Successfully enriched company 99
+2026-04-24 11:38:40,898 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:38:40,898 - __main__ - INFO - [28/144] Processing: MadeComfy
+2026-04-24 11:38:40,899 - scraper.enrichment.manager - INFO - Marked company 140 as processing enrichment
+2026-04-24 11:38:50,539 - scraper.enrichment.manager - INFO - Successfully enriched company 140
+2026-04-24 11:38:50,546 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:38:50,546 - __main__ - INFO - [29/144] Processing: Spotify Advertising
+2026-04-24 11:38:50,549 - scraper.enrichment.manager - INFO - Marked company 183 as processing enrichment
+2026-04-24 11:39:03,726 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:39:13,831 - scraper.enrichment.manager - INFO - Successfully enriched company 183
+2026-04-24 11:39:13,838 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:39:13,838 - __main__ - INFO - [30/144] Processing: My Plan Manager
+2026-04-24 11:39:13,840 - scraper.enrichment.manager - INFO - Marked company 149 as processing enrichment
+2026-04-24 11:39:25,557 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:39:27,969 - scraper.enrichment.manager - INFO - Successfully enriched company 149
+2026-04-24 11:39:27,975 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:39:27,976 - __main__ - INFO - [31/144] Processing: Australian Department of Health and Aged Care
+2026-04-24 11:39:27,978 - scraper.enrichment.manager - INFO - Marked company 76 as processing enrichment
+2026-04-24 11:39:40,356 - scraper.enrichment.manager - INFO - Successfully enriched company 76
+2026-04-24 11:39:40,363 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:39:40,363 - __main__ - INFO - [32/144] Processing: InTraffic
+2026-04-24 11:39:40,365 - scraper.enrichment.manager - INFO - Marked company 127 as processing enrichment
+2026-04-24 11:39:53,885 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:39:56,331 - scraper.enrichment.manager - INFO - Successfully enriched company 127
+2026-04-24 11:39:56,352 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:39:56,352 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 11:39:56,352 - __main__ - INFO - [33/144] Processing: Australia's Workplace Gender Equality Agency (WGEA)
+2026-04-24 11:39:56,353 - scraper.enrichment.manager - INFO - Marked company 210 as processing enrichment
+2026-04-24 11:40:08,297 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:40:20,613 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:40:25,071 - scraper.enrichment.manager - INFO - Successfully enriched company 210
+2026-04-24 11:40:25,078 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:40:25,078 - __main__ - INFO - [34/144] Processing: hummgroup
+2026-04-24 11:40:25,081 - scraper.enrichment.manager - INFO - Marked company 124 as processing enrichment
+2026-04-24 11:40:28,752 - scraper.enrichment.manager - WARNING - Failed to enrich company 124: Smartlead API returned no data
+2026-04-24 11:40:28,754 - __main__ - WARNING -   \u26a0\ufe0f  API returned no data
+2026-04-24 11:40:28,754 - __main__ - INFO - [35/144] Processing: Transport for New South Wales
+2026-04-24 11:40:28,757 - scraper.enrichment.manager - INFO - Marked company 197 as processing enrichment
+2026-04-24 11:40:40,329 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:40:52,632 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:40:57,163 - scraper.enrichment.manager - INFO - Successfully enriched company 197
+2026-04-24 11:40:57,169 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:40:57,169 - __main__ - INFO - [36/144] Processing: NZ Post
+2026-04-24 11:40:57,170 - scraper.enrichment.manager - INFO - Marked company 156 as processing enrichment
+2026-04-24 11:41:12,261 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:41:24,531 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:41:29,005 - scraper.enrichment.manager - INFO - Successfully enriched company 156
+2026-04-24 11:41:29,012 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:41:29,012 - __main__ - INFO - [37/144] Processing: Tip Top
+2026-04-24 11:41:29,015 - scraper.enrichment.manager - INFO - Marked company 195 as processing enrichment
+2026-04-24 11:41:42,724 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:41:50,193 - scraper.enrichment.manager - INFO - Successfully enriched company 195
+2026-04-24 11:41:50,201 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:41:50,201 - __main__ - INFO - [38/144] Processing: L'Oréal
+2026-04-24 11:41:50,203 - scraper.enrichment.manager - INFO - Marked company 139 as processing enrichment
+2026-04-24 11:42:01,776 - scraper.enrichment.manager - INFO - Successfully enriched company 139
+2026-04-24 11:42:01,781 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:42:01,781 - __main__ - INFO - [39/144] Processing: The Victorian Institute of Teaching
+2026-04-24 11:42:01,783 - scraper.enrichment.manager - INFO - Marked company 206 as processing enrichment
+2026-04-24 11:42:13,589 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:42:24,776 - scraper.enrichment.manager - INFO - Successfully enriched company 206
+2026-04-24 11:42:24,783 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:42:24,783 - __main__ - INFO - [40/144] Processing: Barwon Health
+2026-04-24 11:42:24,787 - scraper.enrichment.manager - INFO - Marked company 81 as processing enrichment
+2026-04-24 11:42:33,363 - scraper.enrichment.manager - INFO - Successfully enriched company 81
+2026-04-24 11:42:33,368 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:42:33,368 - __main__ - INFO - [41/144] Processing: Telstra
+2026-04-24 11:42:33,369 - scraper.enrichment.manager - INFO - Marked company 191 as processing enrichment
+2026-04-24 11:42:44,754 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:42:47,195 - scraper.enrichment.manager - INFO - Successfully enriched company 191
+2026-04-24 11:42:47,202 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:42:47,202 - __main__ - INFO - [42/144] Processing: Vocus
+2026-04-24 11:42:47,205 - scraper.enrichment.manager - INFO - Marked company 207 as processing enrichment
+2026-04-24 11:43:00,765 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:43:13,041 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:43:17,481 - scraper.enrichment.manager - INFO - Successfully enriched company 207
+2026-04-24 11:43:17,487 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:43:17,487 - __main__ - INFO - [43/144] Processing: Australia Post
+2026-04-24 11:43:17,489 - scraper.enrichment.manager - INFO - Marked company 77 as processing enrichment
+2026-04-24 11:43:30,659 - scraper.enrichment.manager - INFO - Successfully enriched company 77
+2026-04-24 11:43:30,665 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:43:30,666 - __main__ - INFO - [44/144] Processing: Z Energy
+2026-04-24 11:43:30,667 - scraper.enrichment.manager - INFO - Marked company 215 as processing enrichment
+2026-04-24 11:43:33,143 - scraper.enrichment.manager - WARNING - Failed to enrich company 215: Smartlead API returned no data
+2026-04-24 11:43:33,148 - __main__ - WARNING -   \u26a0\ufe0f  API returned no data
+2026-04-24 11:43:33,148 - __main__ - INFO - [45/144] Processing: Ministry of Health New Zealand
+2026-04-24 11:43:33,151 - scraper.enrichment.manager - INFO - Marked company 145 as processing enrichment
+2026-04-24 11:43:44,648 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:43:55,794 - scraper.enrichment.manager - INFO - Successfully enriched company 145
+2026-04-24 11:43:55,797 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:43:55,797 - __main__ - INFO - [46/144] Processing: Fulton Hogan
+2026-04-24 11:43:55,799 - scraper.enrichment.manager - INFO - Marked company 113 as processing enrichment
+2026-04-24 11:44:07,976 - scraper.enrichment.manager - INFO - Successfully enriched company 113
+2026-04-24 11:44:07,981 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:44:07,982 - __main__ - INFO - [47/144] Processing: Corporate Traveller
+2026-04-24 11:44:07,984 - scraper.enrichment.manager - INFO - Marked company 93 as processing enrichment
+2026-04-24 11:44:20,832 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:44:33,157 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:44:37,903 - scraper.enrichment.manager - INFO - Successfully enriched company 93
+2026-04-24 11:44:37,909 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:44:37,909 - __main__ - INFO - [48/144] Processing: nib Travel
+2026-04-24 11:44:37,913 - scraper.enrichment.manager - INFO - Marked company 154 as processing enrichment
+2026-04-24 11:44:43,094 - scraper.enrichment.manager - INFO - Successfully enriched company 154
+2026-04-24 11:44:43,099 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:44:43,099 - __main__ - INFO - [49/144] Processing: Vicinity Centres
+2026-04-24 11:44:43,102 - scraper.enrichment.manager - INFO - Marked company 205 as processing enrichment
+2026-04-24 11:44:55,907 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:45:08,167 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:45:22,398 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-24 11:45:22,399 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-24 11:45:22,402 - scraper.enrichment.manager - INFO - Successfully enriched company 205
+2026-04-24 11:45:22,410 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:45:22,410 - __main__ - INFO - [50/144] Processing: Toll Global Express
+2026-04-24 11:45:22,415 - scraper.enrichment.manager - INFO - Marked company 196 as processing enrichment
+2026-04-24 11:45:32,326 - scraper.enrichment.manager - INFO - Successfully enriched company 196
+2026-04-24 11:45:32,334 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:45:32,334 - __main__ - INFO - [51/144] Processing: Australian Radio Network (ARN)
+2026-04-24 11:45:32,339 - scraper.enrichment.manager - INFO - Marked company 79 as processing enrichment
+2026-04-24 11:45:44,011 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:45:56,321 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:46:01,093 - scraper.enrichment.manager - INFO - Successfully enriched company 79
+2026-04-24 11:46:01,101 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:46:01,101 - __main__ - INFO - [52/144] Processing: Trustpower
+2026-04-24 11:46:01,102 - scraper.enrichment.manager - INFO - Marked company 201 as processing enrichment
+2026-04-24 11:46:13,032 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:46:25,262 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:46:39,590 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-24 11:46:39,590 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-24 11:46:39,592 - scraper.enrichment.manager - INFO - Successfully enriched company 201
+2026-04-24 11:46:39,597 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:46:39,597 - __main__ - INFO - [53/144] Processing: Telstra
+2026-04-24 11:46:39,601 - scraper.enrichment.manager - INFO - Marked company 190 as processing enrichment
+2026-04-24 11:46:41,404 - scraper.enrichment.manager - INFO - Successfully enriched company 190
+2026-04-24 11:46:41,414 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:46:41,414 - __main__ - INFO - [54/144] Processing: FOXTEL
+2026-04-24 11:46:41,419 - scraper.enrichment.manager - INFO - Marked company 110 as processing enrichment
+2026-04-24 11:46:53,084 - scraper.enrichment.manager - INFO - Successfully enriched company 110
+2026-04-24 11:46:53,087 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:46:53,087 - __main__ - INFO - [55/144] Processing: REA Group
+2026-04-24 11:46:53,088 - scraper.enrichment.manager - INFO - Marked company 169 as processing enrichment
+2026-04-24 11:47:00,354 - scraper.enrichment.manager - INFO - Successfully enriched company 169
+2026-04-24 11:47:00,357 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:47:00,357 - __main__ - INFO - [56/144] Processing: City of Stirling
+2026-04-24 11:47:00,358 - scraper.enrichment.manager - INFO - Marked company 89 as processing enrichment
+2026-04-24 11:47:08,053 - scraper.enrichment.manager - INFO - Successfully enriched company 89
+2026-04-24 11:47:08,061 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:47:08,061 - __main__ - INFO - [57/144] Processing: RMIT
+2026-04-24 11:47:08,064 - scraper.enrichment.manager - INFO - Marked company 172 as processing enrichment
+2026-04-24 11:47:15,311 - scraper.enrichment.manager - INFO - Successfully enriched company 172
+2026-04-24 11:47:15,316 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:47:15,316 - __main__ - INFO - [58/144] Processing: Ricoh South Pacific
+2026-04-24 11:47:15,318 - scraper.enrichment.manager - INFO - Marked company 174 as processing enrichment
+2026-04-24 11:47:28,132 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:47:34,027 - scraper.enrichment.manager - INFO - Successfully enriched company 174
+2026-04-24 11:47:34,032 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:47:34,033 - __main__ - INFO - [59/144] Processing: Legend Corporation
+2026-04-24 11:47:34,036 - scraper.enrichment.manager - INFO - Marked company 135 as processing enrichment
+2026-04-24 11:47:47,367 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:47:59,658 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:48:08,323 - scraper.enrichment.manager - INFO - Successfully enriched company 135
+2026-04-24 11:48:08,326 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:48:08,327 - __main__ - INFO - [60/144] Processing: Geocon
+2026-04-24 11:48:08,329 - scraper.enrichment.manager - INFO - Marked company 115 as processing enrichment
+2026-04-24 11:48:19,764 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:48:30,559 - scraper.enrichment.manager - INFO - Successfully enriched company 115
+2026-04-24 11:48:30,569 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:48:30,569 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 11:48:30,569 - __main__ - INFO - [61/144] Processing: State Trustees Limited
+2026-04-24 11:48:30,571 - scraper.enrichment.manager - INFO - Marked company 185 as processing enrichment
+2026-04-24 11:48:42,172 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:48:54,472 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:48:58,896 - scraper.enrichment.manager - INFO - Successfully enriched company 185
+2026-04-24 11:48:58,903 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:48:58,903 - __main__ - INFO - [62/144] Processing: Formula 1
+2026-04-24 11:48:58,907 - scraper.enrichment.manager - INFO - Marked company 109 as processing enrichment
+2026-04-24 11:49:11,429 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:49:20,262 - scraper.enrichment.manager - INFO - Successfully enriched company 109
+2026-04-24 11:49:20,268 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:49:20,268 - __main__ - INFO - [63/144] Processing: Scape By The Living Company
+2026-04-24 11:49:20,270 - scraper.enrichment.manager - INFO - Marked company 178 as processing enrichment
+2026-04-24 11:49:31,949 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:49:34,387 - scraper.enrichment.manager - INFO - Successfully enriched company 178
+2026-04-24 11:49:34,393 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:49:34,393 - __main__ - INFO - [64/144] Processing: Kudosity
+2026-04-24 11:49:34,395 - scraper.enrichment.manager - INFO - Marked company 131 as processing enrichment
+2026-04-24 11:49:40,200 - scraper.enrichment.manager - INFO - Successfully enriched company 131
+2026-04-24 11:49:40,208 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:49:40,208 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 11:49:40,208 - __main__ - INFO - [65/144] Processing: Pacific Smiles Group
+2026-04-24 11:49:40,212 - scraper.enrichment.manager - INFO - Marked company 160 as processing enrichment
+2026-04-24 11:49:52,674 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:50:04,961 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:50:19,229 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-24 11:50:19,229 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-24 11:50:19,234 - scraper.enrichment.manager - INFO - Successfully enriched company 160
+2026-04-24 11:50:19,240 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:50:19,240 - __main__ - INFO - [66/144] Processing: Urban Rest
+2026-04-24 11:50:19,244 - scraper.enrichment.manager - INFO - Marked company 202 as processing enrichment
+2026-04-24 11:50:31,717 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:50:34,153 - scraper.enrichment.manager - INFO - Successfully enriched company 202
+2026-04-24 11:50:34,159 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:50:34,159 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 11:50:34,159 - __main__ - INFO - [67/144] Processing: Funlab
+2026-04-24 11:50:34,160 - scraper.enrichment.manager - INFO - Marked company 114 as processing enrichment
+2026-04-24 11:50:46,148 - scraper.enrichment.manager - INFO - Successfully enriched company 114
+2026-04-24 11:50:46,153 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:50:46,153 - __main__ - INFO - [68/144] Processing: OpenTable
+2026-04-24 11:50:46,154 - scraper.enrichment.manager - INFO - Marked company 159 as processing enrichment
+2026-04-24 11:50:56,041 - scraper.enrichment.manager - INFO - Successfully enriched company 159
+2026-04-24 11:50:56,045 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:50:56,045 - __main__ - INFO - [69/144] Processing: Australian Football League (AFL)
+2026-04-24 11:50:56,047 - scraper.enrichment.manager - INFO - Marked company 73 as processing enrichment
+2026-04-24 11:51:07,636 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:51:19,952 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:51:24,399 - scraper.enrichment.manager - INFO - Successfully enriched company 73
+2026-04-24 11:51:24,407 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:51:24,407 - __main__ - INFO - [70/144] Processing: The Mix Australia and New Zealand
+2026-04-24 11:51:24,410 - scraper.enrichment.manager - INFO - Marked company 193 as processing enrichment
+2026-04-24 11:51:27,520 - scraper.enrichment.manager - WARNING - Failed to enrich company 193: Smartlead API returned no data
+2026-04-24 11:51:27,524 - __main__ - WARNING -   \u26a0\ufe0f  API returned no data
+2026-04-24 11:51:27,524 - __main__ - INFO - [71/144] Processing: True Alliance
+2026-04-24 11:51:27,525 - scraper.enrichment.manager - INFO - Marked company 200 as processing enrichment
+2026-04-24 11:51:36,392 - scraper.enrichment.manager - INFO - Successfully enriched company 200
+2026-04-24 11:51:36,395 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:51:36,395 - __main__ - INFO - [72/144] Processing: Barbeques Galore
+2026-04-24 11:51:36,399 - scraper.enrichment.manager - INFO - Marked company 80 as processing enrichment
+2026-04-24 11:51:48,048 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:51:57,873 - scraper.enrichment.manager - INFO - Successfully enriched company 80
+2026-04-24 11:51:57,878 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:51:57,878 - __main__ - INFO - [73/144] Processing: Australian Pacific Touring (APT)
+2026-04-24 11:51:57,880 - scraper.enrichment.manager - INFO - Marked company 78 as processing enrichment
+2026-04-24 11:52:09,639 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:52:21,886 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:52:36,152 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-24 11:52:36,152 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-24 11:52:36,155 - scraper.enrichment.manager - INFO - Successfully enriched company 78
+2026-04-24 11:52:36,164 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:52:36,164 - __main__ - INFO - [74/144] Processing: Intrepid Travel
+2026-04-24 11:52:36,168 - scraper.enrichment.manager - INFO - Marked company 128 as processing enrichment
+2026-04-24 11:52:44,354 - scraper.enrichment.manager - INFO - Successfully enriched company 128
+2026-04-24 11:52:44,361 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:52:44,361 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 11:52:44,361 - __main__ - INFO - [75/144] Processing: Conveya
+2026-04-24 11:52:44,362 - scraper.enrichment.manager - INFO - Marked company 92 as processing enrichment
+2026-04-24 11:52:57,946 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:53:10,223 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:53:14,648 - scraper.enrichment.manager - INFO - Successfully enriched company 92
+2026-04-24 11:53:14,652 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:53:14,652 - __main__ - INFO - [76/144] Processing: Netregistry
+2026-04-24 11:53:14,653 - scraper.enrichment.manager - INFO - Marked company 153 as processing enrichment
+2026-04-24 11:53:25,729 - scraper.enrichment.manager - INFO - Successfully enriched company 153
+2026-04-24 11:53:25,733 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:53:25,733 - __main__ - INFO - [77/144] Processing: Reece
+2026-04-24 11:53:25,736 - scraper.enrichment.manager - INFO - Marked company 170 as processing enrichment
+2026-04-24 11:53:37,597 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:53:49,871 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:53:54,558 - scraper.enrichment.manager - INFO - Successfully enriched company 170
+2026-04-24 11:53:54,566 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:53:54,566 - __main__ - INFO - [78/144] Processing: Wyndham Destinations Asia Pacific
+2026-04-24 11:53:54,569 - scraper.enrichment.manager - INFO - Marked company 212 as processing enrichment
+2026-04-24 11:53:57,730 - scraper.enrichment.manager - WARNING - Failed to enrich company 212: Smartlead API returned no data
+2026-04-24 11:53:57,734 - __main__ - WARNING -   \u26a0\ufe0f  API returned no data
+2026-04-24 11:53:57,734 - __main__ - INFO - [79/144] Processing: Politix
+2026-04-24 11:53:57,737 - scraper.enrichment.manager - INFO - Marked company 165 as processing enrichment
+2026-04-24 11:54:09,094 - scraper.enrichment.manager - INFO - Successfully enriched company 165
+2026-04-24 11:54:09,099 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:54:09,099 - __main__ - INFO - [80/144] Processing: Leukaemia Foundation
+2026-04-24 11:54:09,101 - scraper.enrichment.manager - INFO - Marked company 137 as processing enrichment
+2026-04-24 11:54:20,555 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:54:32,181 - scraper.enrichment.manager - INFO - Successfully enriched company 137
+2026-04-24 11:54:32,187 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:54:32,187 - __main__ - INFO - [81/144] Processing: RetireAustralia
+2026-04-24 11:54:32,188 - scraper.enrichment.manager - INFO - Marked company 171 as processing enrichment
+2026-04-24 11:54:44,208 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:54:46,635 - scraper.enrichment.manager - INFO - Successfully enriched company 171
+2026-04-24 11:54:46,640 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:54:46,640 - __main__ - INFO - [82/144] Processing: SafetyCulture
+2026-04-24 11:54:46,642 - scraper.enrichment.manager - INFO - Marked company 176 as processing enrichment
+2026-04-24 11:54:58,832 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:55:08,144 - scraper.enrichment.manager - INFO - Successfully enriched company 176
+2026-04-24 11:55:08,146 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:55:08,146 - __main__ - INFO - [83/144] Processing: Vend
+2026-04-24 11:55:08,147 - scraper.enrichment.manager - INFO - Marked company 204 as processing enrichment
+2026-04-24 11:55:19,704 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:55:31,994 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:55:36,430 - scraper.enrichment.manager - INFO - Successfully enriched company 204
+2026-04-24 11:55:36,436 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:55:36,436 - __main__ - INFO - [84/144] Processing: Tritium
+2026-04-24 11:55:36,437 - scraper.enrichment.manager - INFO - Marked company 199 as processing enrichment
+2026-04-24 11:55:49,931 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:55:52,662 - scraper.enrichment.manager - INFO - Successfully enriched company 199
+2026-04-24 11:55:52,666 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:55:52,666 - __main__ - INFO - [85/144] Processing: EnerSys
+2026-04-24 11:55:52,668 - scraper.enrichment.manager - INFO - Marked company 101 as processing enrichment
+2026-04-24 11:56:06,558 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:56:18,815 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:56:23,247 - scraper.enrichment.manager - INFO - Successfully enriched company 101
+2026-04-24 11:56:23,250 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:56:23,250 - __main__ - INFO - [86/144] Processing: The Wests Group Australia
+2026-04-24 11:56:23,252 - scraper.enrichment.manager - INFO - Marked company 194 as processing enrichment
+2026-04-24 11:56:36,729 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:56:48,603 - scraper.enrichment.manager - INFO - Successfully enriched company 194
+2026-04-24 11:56:48,609 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:56:48,609 - __main__ - INFO - [87/144] Processing: pay.com.au
+2026-04-24 11:56:48,610 - scraper.enrichment.manager - INFO - Marked company 162 as processing enrichment
+2026-04-24 11:57:00,048 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:57:02,455 - scraper.enrichment.manager - INFO - Successfully enriched company 162
+2026-04-24 11:57:02,461 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:57:02,461 - __main__ - INFO - [88/144] Processing: Expert Wealth
+2026-04-24 11:57:02,463 - scraper.enrichment.manager - INFO - Marked company 102 as processing enrichment
+2026-04-24 11:57:14,902 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:57:23,965 - scraper.enrichment.manager - INFO - Successfully enriched company 102
+2026-04-24 11:57:23,972 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:57:23,972 - __main__ - INFO -   \U0001f4e7 Updated 2 key person email(s)
+2026-04-24 11:57:23,973 - __main__ - INFO - [89/144] Processing: Good360
+2026-04-24 11:57:23,976 - scraper.enrichment.manager - INFO - Marked company 119 as processing enrichment
+2026-04-24 11:57:35,369 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:57:37,793 - scraper.enrichment.manager - INFO - Successfully enriched company 119
+2026-04-24 11:57:37,800 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:57:37,800 - __main__ - INFO - [90/144] Processing: Good Things Australia
+2026-04-24 11:57:37,802 - scraper.enrichment.manager - INFO - Marked company 118 as processing enrichment
+2026-04-24 11:57:51,487 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:57:55,312 - scraper.enrichment.manager - INFO - Successfully enriched company 118
+2026-04-24 11:57:55,318 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:57:55,318 - __main__ - INFO - [91/144] Processing: Sutton Tools
+2026-04-24 11:57:55,320 - scraper.enrichment.manager - INFO - Marked company 188 as processing enrichment
+2026-04-24 11:58:08,528 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:58:20,786 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 11:58:35,086 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-24 11:58:35,086 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-24 11:58:35,089 - scraper.enrichment.manager - INFO - Successfully enriched company 188
+2026-04-24 11:58:35,094 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:58:35,094 - __main__ - INFO - [92/144] Processing: Salesforce
+2026-04-24 11:58:35,097 - scraper.enrichment.manager - INFO - Marked company 141 as processing enrichment
+2026-04-24 11:58:39,680 - scraper.enrichment.manager - INFO - Successfully enriched company 141
+2026-04-24 11:58:39,685 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:58:39,686 - __main__ - INFO - [93/144] Processing: Coliban Water
+2026-04-24 11:58:39,688 - scraper.enrichment.manager - INFO - Marked company 90 as processing enrichment
+2026-04-24 11:58:54,071 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:58:56,551 - scraper.enrichment.manager - INFO - Successfully enriched company 90
+2026-04-24 11:58:56,556 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:58:56,557 - __main__ - INFO - [94/144] Processing: efex
+2026-04-24 11:58:56,559 - scraper.enrichment.manager - INFO - Marked company 100 as processing enrichment
+2026-04-24 11:59:09,475 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:59:20,548 - scraper.enrichment.manager - INFO - Successfully enriched company 100
+2026-04-24 11:59:20,551 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:59:20,551 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 11:59:20,551 - __main__ - INFO - [95/144] Processing: Parkable
+2026-04-24 11:59:20,552 - scraper.enrichment.manager - INFO - Marked company 161 as processing enrichment
+2026-04-24 11:59:29,948 - scraper.enrichment.manager - INFO - Successfully enriched company 161
+2026-04-24 11:59:29,956 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 11:59:29,956 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 11:59:29,956 - __main__ - INFO - [96/144] Processing: MyIntegra
+2026-04-24 11:59:29,959 - scraper.enrichment.manager - INFO - Marked company 150 as processing enrichment
+2026-04-24 11:59:43,249 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 11:59:55,617 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:00:00,047 - scraper.enrichment.manager - INFO - Successfully enriched company 150
+2026-04-24 12:00:00,053 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:00:00,053 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:00:00,053 - __main__ - INFO - [97/144] Processing: Rapid Response Revival
+2026-04-24 12:00:00,056 - scraper.enrichment.manager - INFO - Marked company 168 as processing enrichment
+2026-04-24 12:00:13,141 - scraper.enrichment.manager - INFO - Successfully enriched company 168
+2026-04-24 12:00:13,147 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:00:13,147 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:00:13,147 - __main__ - INFO - [98/144] Processing: Celebrity Ink™
+2026-04-24 12:00:13,148 - scraper.enrichment.manager - INFO - Marked company 88 as processing enrichment
+2026-04-24 12:00:23,343 - scraper.enrichment.manager - INFO - Successfully enriched company 88
+2026-04-24 12:00:23,349 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:00:23,349 - __main__ - INFO - [99/144] Processing: Law Squared
+2026-04-24 12:00:23,352 - scraper.enrichment.manager - INFO - Marked company 133 as processing enrichment
+2026-04-24 12:00:27,265 - scraper.enrichment.manager - INFO - Successfully enriched company 133
+2026-04-24 12:00:27,267 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:00:27,267 - __main__ - INFO - [100/144] Processing: PaySauce
+2026-04-24 12:00:27,268 - scraper.enrichment.manager - INFO - Marked company 163 as processing enrichment
+2026-04-24 12:00:38,820 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:00:42,360 - scraper.enrichment.manager - INFO - Successfully enriched company 163
+2026-04-24 12:00:42,366 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:00:42,366 - __main__ - INFO - [101/144] Processing: Syndex
+2026-04-24 12:00:42,368 - scraper.enrichment.manager - INFO - Marked company 189 as processing enrichment
+2026-04-24 12:00:55,155 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:01:07,424 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:01:12,026 - scraper.enrichment.manager - INFO - Successfully enriched company 189
+2026-04-24 12:01:12,034 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:01:12,034 - __main__ - INFO - [102/144] Processing: White Fox Boutique
+2026-04-24 12:01:12,035 - scraper.enrichment.manager - INFO - Marked company 208 as processing enrichment
+2026-04-24 12:01:14,782 - scraper.enrichment.manager - INFO - Successfully enriched company 208
+2026-04-24 12:01:14,787 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:01:14,787 - __main__ - INFO - [103/144] Processing: Victorian Asbestos Eradication Agency (VAEA)
+2026-04-24 12:01:14,789 - scraper.enrichment.manager - INFO - Marked company 203 as processing enrichment
+2026-04-24 12:01:17,611 - scraper.enrichment.manager - WARNING - Failed to enrich company 203: Smartlead API returned no data
+2026-04-24 12:01:17,615 - __main__ - WARNING -   \u26a0\ufe0f  API returned no data
+2026-04-24 12:01:17,615 - __main__ - INFO - [104/144] Processing: Sustainable Salons
+2026-04-24 12:01:17,617 - scraper.enrichment.manager - INFO - Marked company 187 as processing enrichment
+2026-04-24 12:01:29,142 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:01:41,511 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:01:46,322 - scraper.enrichment.manager - INFO - Successfully enriched company 187
+2026-04-24 12:01:46,329 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:01:46,329 - __main__ - INFO -   \U0001f4e7 Updated 2 key person email(s)
+2026-04-24 12:01:46,329 - __main__ - INFO - [105/144] Processing: Wollondilly Shire Council
+2026-04-24 12:01:46,331 - scraper.enrichment.manager - INFO - Marked company 209 as processing enrichment
+2026-04-24 12:01:49,324 - scraper.enrichment.manager - WARNING - Failed to enrich company 209: Smartlead API returned no data
+2026-04-24 12:01:49,328 - __main__ - WARNING -   \u26a0\ufe0f  API returned no data
+2026-04-24 12:01:49,328 - __main__ - INFO - [106/144] Processing: SP Screens
+2026-04-24 12:01:49,331 - scraper.enrichment.manager - INFO - Marked company 182 as processing enrichment
+2026-04-24 12:02:01,071 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:02:13,401 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:02:27,670 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-24 12:02:27,670 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-24 12:02:27,672 - scraper.enrichment.manager - INFO - Successfully enriched company 182
+2026-04-24 12:02:27,673 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:02:27,673 - __main__ - INFO - [107/144] Processing: BizCover
+2026-04-24 12:02:27,675 - scraper.enrichment.manager - INFO - Marked company 84 as processing enrichment
+2026-04-24 12:02:39,259 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:02:51,520 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:02:55,971 - scraper.enrichment.manager - INFO - Successfully enriched company 84
+2026-04-24 12:02:55,978 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:02:55,978 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:02:55,978 - __main__ - INFO - [108/144] Processing: Itoc
+2026-04-24 12:02:55,980 - scraper.enrichment.manager - INFO - Marked company 129 as processing enrichment
+2026-04-24 12:03:08,481 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:03:16,531 - scraper.enrichment.manager - INFO - Successfully enriched company 129
+2026-04-24 12:03:16,537 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:03:16,537 - __main__ - INFO - [109/144] Processing: Bittn
+2026-04-24 12:03:16,539 - scraper.enrichment.manager - INFO - Marked company 82 as processing enrichment
+2026-04-24 12:03:26,733 - scraper.enrichment.manager - INFO - Successfully enriched company 82
+2026-04-24 12:03:26,740 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:03:26,740 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:03:26,740 - __main__ - INFO - [110/144] Processing: Express Glass
+2026-04-24 12:03:26,743 - scraper.enrichment.manager - INFO - Marked company 103 as processing enrichment
+2026-04-24 12:03:38,198 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:03:48,914 - scraper.enrichment.manager - INFO - Successfully enriched company 103
+2026-04-24 12:03:48,918 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:03:48,918 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:03:48,918 - __main__ - INFO - [111/144] Processing: Youth Insearch
+2026-04-24 12:03:48,919 - scraper.enrichment.manager - INFO - Marked company 214 as processing enrichment
+2026-04-24 12:04:01,669 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:04:07,110 - scraper.enrichment.manager - INFO - Successfully enriched company 214
+2026-04-24 12:04:07,117 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:04:07,118 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:04:07,118 - __main__ - INFO - [112/144] Processing: Nanosonics
+2026-04-24 12:04:07,120 - scraper.enrichment.manager - INFO - Marked company 152 as processing enrichment
+2026-04-24 12:04:20,026 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:04:30,929 - scraper.enrichment.manager - INFO - Successfully enriched company 152
+2026-04-24 12:04:30,936 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:04:30,937 - __main__ - INFO - [113/144] Processing: IMANI
+2026-04-24 12:04:30,939 - scraper.enrichment.manager - INFO - Marked company 122 as processing enrichment
+2026-04-24 12:04:43,760 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:04:56,042 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:05:00,804 - scraper.enrichment.manager - INFO - Successfully enriched company 122
+2026-04-24 12:05:00,810 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:05:00,810 - __main__ - INFO - [114/144] Processing: Surf Life Saving NSW
+2026-04-24 12:05:00,812 - scraper.enrichment.manager - INFO - Marked company 186 as processing enrichment
+2026-04-24 12:05:16,146 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:05:27,084 - scraper.enrichment.manager - INFO - Successfully enriched company 186
+2026-04-24 12:05:27,090 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:05:27,090 - __main__ - INFO - [115/144] Processing: Dairy Australia
+2026-04-24 12:05:27,092 - scraper.enrichment.manager - INFO - Marked company 96 as processing enrichment
+2026-04-24 12:05:39,422 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:05:50,062 - scraper.enrichment.manager - INFO - Successfully enriched company 96
+2026-04-24 12:05:50,068 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:05:50,068 - __main__ - INFO - [116/144] Processing: me&u
+2026-04-24 12:05:50,069 - scraper.enrichment.manager - INFO - Marked company 142 as processing enrichment
+2026-04-24 12:05:53,105 - scraper.enrichment.manager - WARNING - Failed to enrich company 142: Smartlead API returned no data
+2026-04-24 12:05:53,106 - __main__ - WARNING -   \u26a0\ufe0f  API returned no data
+2026-04-24 12:05:53,106 - __main__ - INFO - [117/144] Processing: Go1
+2026-04-24 12:05:53,107 - scraper.enrichment.manager - INFO - Marked company 116 as processing enrichment
+2026-04-24 12:06:04,691 - scraper.enrichment.manager - INFO - Successfully enriched company 116
+2026-04-24 12:06:04,696 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:06:04,696 - __main__ - INFO - [118/144] Processing: Interactive Accounting
+2026-04-24 12:06:04,698 - scraper.enrichment.manager - INFO - Marked company 126 as processing enrichment
+2026-04-24 12:06:07,174 - scraper.enrichment.manager - WARNING - Failed to enrich company 126: Smartlead API returned no data
+2026-04-24 12:06:07,178 - __main__ - WARNING -   \u26a0\ufe0f  API returned no data
+2026-04-24 12:06:07,178 - __main__ - INFO - [119/144] Processing: Scouts Aotearoa
+2026-04-24 12:06:07,181 - scraper.enrichment.manager - INFO - Marked company 179 as processing enrichment
+2026-04-24 12:06:18,906 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:06:21,309 - scraper.enrichment.manager - INFO - Successfully enriched company 179
+2026-04-24 12:06:21,316 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:06:21,316 - __main__ - INFO - [120/144] Processing: STAAH
+2026-04-24 12:06:21,318 - scraper.enrichment.manager - INFO - Marked company 184 as processing enrichment
+2026-04-24 12:06:33,520 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:06:35,984 - scraper.enrichment.manager - INFO - Successfully enriched company 184
+2026-04-24 12:06:35,991 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:06:35,992 - __main__ - INFO - [121/144] Processing: Frollo
+2026-04-24 12:06:35,997 - scraper.enrichment.manager - INFO - Marked company 111 as processing enrichment
+2026-04-24 12:06:49,162 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:06:51,603 - scraper.enrichment.manager - INFO - Successfully enriched company 111
+2026-04-24 12:06:51,606 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:06:51,606 - __main__ - INFO - [122/144] Processing: My Muscle Chef
+2026-04-24 12:06:51,608 - scraper.enrichment.manager - INFO - Marked company 148 as processing enrichment
+2026-04-24 12:07:03,950 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:07:16,220 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:07:20,685 - scraper.enrichment.manager - INFO - Successfully enriched company 148
+2026-04-24 12:07:20,693 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:07:20,694 - __main__ - INFO -   \U0001f4e7 Updated 2 key person email(s)
+2026-04-24 12:07:20,694 - __main__ - INFO - [123/144] Processing: Insure 247
+2026-04-24 12:07:20,696 - scraper.enrichment.manager - INFO - Marked company 125 as processing enrichment
+2026-04-24 12:07:34,017 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:07:46,269 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:08:00,549 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-24 12:08:00,550 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-24 12:08:00,552 - scraper.enrichment.manager - INFO - Successfully enriched company 125
+2026-04-24 12:08:00,558 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:08:00,558 - __main__ - INFO - [124/144] Processing: Medcast
+2026-04-24 12:08:00,561 - scraper.enrichment.manager - INFO - Marked company 144 as processing enrichment
+2026-04-24 12:08:12,035 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:08:24,282 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:08:29,427 - scraper.enrichment.manager - INFO - Successfully enriched company 144
+2026-04-24 12:08:29,430 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:08:29,430 - __main__ - INFO - [125/144] Processing: MLEC Group
+2026-04-24 12:08:29,432 - scraper.enrichment.manager - INFO - Marked company 146 as processing enrichment
+2026-04-24 12:08:31,881 - scraper.enrichment.manager - WARNING - Failed to enrich company 146: Smartlead API returned no data
+2026-04-24 12:08:31,884 - __main__ - WARNING -   \u26a0\ufe0f  API returned no data
+2026-04-24 12:08:31,884 - __main__ - INFO - [126/144] Processing: Canva
+2026-04-24 12:08:31,888 - scraper.enrichment.manager - INFO - Marked company 87 as processing enrichment
+2026-04-24 12:08:44,160 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:08:46,693 - scraper.enrichment.manager - INFO - Successfully enriched company 87
+2026-04-24 12:08:46,699 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:08:46,699 - __main__ - INFO - [127/144] Processing: Digital Wellness
+2026-04-24 12:08:46,703 - scraper.enrichment.manager - INFO - Marked company 97 as processing enrichment
+2026-04-24 12:08:59,774 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:09:04,085 - scraper.enrichment.manager - INFO - Successfully enriched company 97
+2026-04-24 12:09:04,087 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:09:04,087 - __main__ - INFO - [128/144] Processing: Nano
+2026-04-24 12:09:04,088 - scraper.enrichment.manager - INFO - Marked company 151 as processing enrichment
+2026-04-24 12:09:20,021 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:09:28,726 - scraper.enrichment.manager - INFO - Successfully enriched company 151
+2026-04-24 12:09:28,733 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:09:28,733 - __main__ - INFO - [129/144] Processing: PharmaPrograms
+2026-04-24 12:09:28,736 - scraper.enrichment.manager - INFO - Marked company 164 as processing enrichment
+2026-04-24 12:09:40,409 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:09:51,834 - scraper.enrichment.manager - INFO - Successfully enriched company 164
+2026-04-24 12:09:51,837 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:09:51,837 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:09:51,837 - __main__ - INFO - [130/144] Processing: Hawthorn Football Club
+2026-04-24 12:09:51,840 - scraper.enrichment.manager - INFO - Marked company 120 as processing enrichment
+2026-04-24 12:10:03,465 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:10:14,954 - scraper.enrichment.manager - INFO - Successfully enriched company 120
+2026-04-24 12:10:14,962 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:10:14,962 - __main__ - INFO - [131/144] Processing: Curve Tomorrow
+2026-04-24 12:10:14,965 - scraper.enrichment.manager - INFO - Marked company 95 as processing enrichment
+2026-04-24 12:10:26,404 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:10:33,093 - scraper.enrichment.manager - INFO - Successfully enriched company 95
+2026-04-24 12:10:33,099 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:10:33,099 - __main__ - INFO - [132/144] Processing: Botero
+2026-04-24 12:10:33,102 - scraper.enrichment.manager - INFO - Marked company 86 as processing enrichment
+2026-04-24 12:10:45,745 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:10:57,975 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:11:09,922 - scraper.enrichment.manager - INFO - Successfully enriched company 86
+2026-04-24 12:11:09,925 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:11:09,925 - __main__ - INFO - [133/144] Processing: Office Hub
+2026-04-24 12:11:09,926 - scraper.enrichment.manager - INFO - Marked company 157 as processing enrichment
+2026-04-24 12:11:23,113 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:11:35,367 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:11:40,127 - scraper.enrichment.manager - INFO - Successfully enriched company 157
+2026-04-24 12:11:40,134 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:11:40,134 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:11:40,134 - __main__ - INFO - [134/144] Processing: Cure Cancer
+2026-04-24 12:11:40,135 - scraper.enrichment.manager - INFO - Marked company 94 as processing enrichment
+2026-04-24 12:11:53,392 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:12:05,647 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:12:10,115 - scraper.enrichment.manager - INFO - Successfully enriched company 94
+2026-04-24 12:12:10,130 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:12:10,130 - __main__ - INFO - [135/144] Processing: Lendi
+2026-04-24 12:12:10,131 - scraper.enrichment.manager - INFO - Marked company 136 as processing enrichment
+2026-04-24 12:12:22,136 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:12:27,355 - scraper.enrichment.manager - INFO - Successfully enriched company 136
+2026-04-24 12:12:27,360 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:12:27,360 - __main__ - INFO - [136/144] Processing: Good Return
+2026-04-24 12:12:27,361 - scraper.enrichment.manager - INFO - Marked company 117 as processing enrichment
+2026-04-24 12:12:39,887 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:12:49,363 - scraper.enrichment.manager - INFO - Successfully enriched company 117
+2026-04-24 12:12:49,370 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:12:49,370 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:12:49,370 - __main__ - INFO - [137/144] Processing: Living Edge
+2026-04-24 12:12:49,373 - scraper.enrichment.manager - INFO - Marked company 138 as processing enrichment
+2026-04-24 12:13:00,968 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:13:10,795 - scraper.enrichment.manager - INFO - Successfully enriched company 138
+2026-04-24 12:13:10,800 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:13:10,800 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:13:10,800 - __main__ - INFO - [138/144] Processing: Lawpath
+2026-04-24 12:13:10,802 - scraper.enrichment.manager - INFO - Marked company 134 as processing enrichment
+2026-04-24 12:13:17,939 - scraper.enrichment.manager - INFO - Successfully enriched company 134
+2026-04-24 12:13:17,945 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:13:17,945 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:13:17,945 - __main__ - INFO - [139/144] Processing: ModularWalls
+2026-04-24 12:13:17,946 - scraper.enrichment.manager - INFO - Marked company 147 as processing enrichment
+2026-04-24 12:13:30,220 - scraper.enrichment.manager - INFO - Successfully enriched company 147
+2026-04-24 12:13:30,226 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:13:30,227 - __main__ - INFO - [140/144] Processing: Community Vision
+2026-04-24 12:13:30,229 - scraper.enrichment.manager - INFO - Marked company 91 as processing enrichment
+2026-04-24 12:13:43,227 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:13:45,679 - scraper.enrichment.manager - INFO - Successfully enriched company 91
+2026-04-24 12:13:45,688 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:13:45,688 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:13:45,688 - __main__ - INFO - [141/144] Processing: BlackBull Markets
+2026-04-24 12:13:45,691 - scraper.enrichment.manager - INFO - Marked company 85 as processing enrichment
+2026-04-24 12:13:57,827 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:14:10,091 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-24 12:14:23,937 - scraper.enrichment.manager - INFO - Successfully enriched company 85
+2026-04-24 12:14:23,941 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:14:23,941 - __main__ - INFO - [142/144] Processing: Bizcap
+2026-04-24 12:14:23,943 - scraper.enrichment.manager - INFO - Marked company 83 as processing enrichment
+2026-04-24 12:14:31,801 - scraper.enrichment.manager - INFO - Successfully enriched company 83
+2026-04-24 12:14:31,808 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:14:31,808 - __main__ - INFO -   \U0001f4e7 Updated 1 key person email(s)
+2026-04-24 12:14:31,808 - __main__ - INFO - [143/144] Processing: Ausbuild
+2026-04-24 12:14:31,811 - scraper.enrichment.manager - INFO - Marked company 75 as processing enrichment
+2026-04-24 12:14:44,648 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-24 12:14:47,106 - scraper.enrichment.manager - INFO - Successfully enriched company 75
+2026-04-24 12:14:47,111 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-24 12:14:47,111 - __main__ - INFO - [144/144] Processing: A Team Tuition
+2026-04-24 12:14:47,113 - scraper.enrichment.manager - INFO - Marked company 72 as processing enrichment
+2026-04-24 12:14:50,163 - scraper.enrichment.manager - WARNING - Failed to enrich company 72: Smartlead API returned no data
+2026-04-24 12:14:50,165 - __main__ - WARNING -   \u26a0\ufe0f  API returned no data
+2026-04-24 12:14:50,165 - __main__ - INFO - 
+======================================================================
+2026-04-24 12:14:50,165 - __main__ - INFO - Enrichment Complete for Job: Salesforce Customer-20April
+2026-04-24 12:14:50,165 - __main__ - INFO - \u2705 Successfully enriched: 133
+2026-04-24 12:14:50,165 - __main__ - INFO - \u274c Failed: 11
+2026-04-24 12:14:50,165 - __main__ - INFO - ======================================================================
+2026-04-24 12:14:50,165 - __main__ - INFO - 
+Tip: Run with --retry-failed to retry failed enrichments
