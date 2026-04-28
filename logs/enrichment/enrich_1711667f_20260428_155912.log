@@ -1,0 +1,19 @@
+C:\Users\MindRuby\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.4.0.post2)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+2026-04-28 15:59:15,686 - __main__ - INFO - Database: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+
+2026-04-28 15:59:15,686 - __main__ - INFO - Resetting failed enrichments for retry...
+
+2026-04-28 15:59:15,855 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-28 15:59:15,874 - scraper.enrichment.manager - INFO - Reset 0 failed enrichments for job 1711667f-5d12-40c0-8804-c446b1331816
+2026-04-28 15:59:15,874 - __main__ - INFO - Reset 0 failed enrichments
+
+2026-04-28 15:59:15,919 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-28 15:59:15,921 - __main__ - INFO - ======================================================================
+2026-04-28 15:59:15,921 - __main__ - INFO - Starting enrichment for Job: Test direct input
+2026-04-28 15:59:15,921 - __main__ - INFO - Job ID: 1711667f-5d12-40c0-8804-c446b1331816
+2026-04-28 15:59:15,921 - __main__ - INFO - Status: completed
+2026-04-28 15:59:15,921 - __main__ - INFO - Dry Run: False
+2026-04-28 15:59:15,921 - __main__ - INFO - ======================================================================
+2026-04-28 15:59:15,924 - __main__ - INFO - Enrichment Status: 0 pending, 0 processing, 2 enriched, 0 failed out of 2 total
+2026-04-28 15:59:15,924 - __main__ - INFO - No pending companies to enrich for this job

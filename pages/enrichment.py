@@ -121,6 +121,110 @@ def _get_email_verification_counts(contact_rows: list[dict[str, Any]]) -> tuple[
     return valid_count, invalid_count
 
 
+def _build_enrichment_excel_bytes(
+    job_results: list[dict],
+    job_name: str = "",
+) -> bytes:
+    """
+    Flatten smartlead_enrichment JSON from each company row into a single Excel sheet.
+
+    Each row in the output represents one contact enriched.  Company-level columns
+    (from the DB row and from enrichment.company_context / stats) are repeated for
+    every contact of that company so the sheet is fully self-contained.
+
+    If a company has no contacts its data still appears as a single row (blanks for
+    contact columns).
+    """
+    import io
+
+    flat_rows: list[dict] = []
+
+    for row in job_results:
+        enrichment: dict = row.get("smartlead_enrichment") or {}
+        company_ctx: dict = enrichment.get("company_context") or {}
+        stats: dict = enrichment.get("stats") or {}
+        enriched_at: str = enrichment.get("enriched_at") or ""
+
+        # ── Company-level columns ────────────────────────────────────────────
+        company_base = {
+            "Company_Name": row.get("company_name") or "",
+            "Company_URL":  row.get("company_url") or "",
+            #"Country":      row.get("location") or company_ctx.get("location") or "",
+        }
+
+        # ── Contacts: prefer contacts_enriched; fall back to search_contacts ─
+        contacts_enriched: list[dict] = enrichment.get("contacts_enriched") or []
+        search_contacts: list[dict] = (
+            (enrichment.get("search_contacts") or {})
+            .get("data", {})
+            .get("list", [])
+        )
+        contacts: list[dict] = contacts_enriched or search_contacts
+
+        # find_emails keyed by email_id for quick lookup
+        find_email_map: dict[str, dict] = {
+            fe.get("email_id", ""): fe
+            for fe in (enrichment.get("find_emails") or {}).get("data") or []
+        }
+
+        if not contacts:
+            flat_rows.append({
+                **company_base,
+                "Industry":            "",
+                "Company_Size":        "",
+                "Revenue":             "",
+                "First_Name":          "",
+                "Last_Name":           "",
+                "Title":               "",
+                "Level":               "",
+                "Department":          "",
+                "Email":               "",
+                "Verification_Status": "",
+                "City":                "",
+                "State":               "",
+                "Country_Contact":     "",
+                "Address":             "",
+            })
+            continue
+
+        for contact in contacts:
+            dept = contact.get("department") or []
+            email_id = contact.get("email_id") or contact.get("email") or ""
+            fe_row = find_email_map.get(email_id) or {}
+
+            flat_rows.append({
+                **company_base,
+                # Smartlead-sourced company fields
+                "Industry":            contact.get("industry") or row.get("industry") or "",
+                "Company_Size":        contact.get("companyHeadCount") or row.get("company_size") or "",
+                "Revenue":             contact.get("companyRevenue") or "",
+                # Contact identity
+                "First_Name":          contact.get("firstName") or "",
+                "Last_Name":           contact.get("lastName") or "",
+                "Title":               contact.get("title") or "",
+                "Level":               contact.get("level") or "",
+                "Department":          ", ".join(dept) if isinstance(dept, list) else str(dept or ""),
+                # Contact info
+                "Email":               email_id,
+                "Verification_Status": (
+                    contact.get("verification_status")
+                    or fe_row.get("verification_status")
+                    or ""
+                ),
+                # Location
+                "City":                contact.get("city") or "",
+                "State":               contact.get("state") or "",
+                "Country_Contact":     contact.get("country") or "",
+                "Address":             contact.get("address") or "",
+            })
+
+    output = io.BytesIO()
+    df = pd.DataFrame(flat_rows) if flat_rows else pd.DataFrame()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, sheet_name="Enrichment Data", index=False)
+    return output.getvalue()
+
+
 def _render_kpi_card(label: str, value: Any, tone: str = "") -> None:
     """Render compact KPI card."""
     tone_class = f"ui-{tone}" if tone else ""
@@ -560,6 +664,21 @@ with tab2:
         else:
             st.info("No enriched contacts available for this job yet.")
 
+        # ── Download enrichment Excel ────────────────────────────────────────
+        if detail_results:
+            _detail_job_name = selected_detail_job.split(" \u2022 ")[0].strip().replace(" ", "_")
+            _excel_bytes = _build_enrichment_excel_bytes(
+                detail_results, _detail_job_name
+            )
+            st.download_button(
+                label="\u2b07\ufe0f Download Enrichment Excel",
+                data=_excel_bytes,
+                file_name=f"enrichment_{_detail_job_name}_{detail_job_id[:8]}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key=f"dl_tab2_{detail_job_id}",
+                use_container_width=False,
+            )
+
     if auto_refresh:
         time.sleep(5)
         st.rerun()
@@ -614,6 +733,21 @@ with tab3:
                     st.caption(f"Email verification summary: ✅ Valid = {valid_count} | ❌ Invalid/Other = {invalid_count}")
                 else:
                     st.caption("No contact-level enrichment output recorded.")
+
+                # ── Download button ──────────────────────────────────────────
+                if job_results:
+                    _hist_job_name = (job.job_name or "Untitled").replace(" ", "_")
+                    _hist_excel_bytes = _build_enrichment_excel_bytes(
+                        job_results, _hist_job_name
+                    )
+                    st.download_button(
+                        label="⬇️ Download Enrichment Excel",
+                        data=_hist_excel_bytes,
+                        file_name=f"enrichment_{_hist_job_name}_{job.job_id[:8]}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key=f"dl_hist_{job.job_id}",
+                        use_container_width=False,
+                    )
 
 st.divider()
 

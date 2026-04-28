@@ -1,0 +1,34 @@
+C:\Users\MindRuby\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.4.0.post2)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+2026-04-28 12:57:23,007 - __main__ - INFO - Database: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+
+2026-04-28 12:57:23,195 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-28 12:57:23,210 - __main__ - INFO - ======================================================================
+2026-04-28 12:57:23,210 - __main__ - INFO - Starting enrichment for Job: Test direct input
+2026-04-28 12:57:23,211 - __main__ - INFO - Job ID: 1711667f-5d12-40c0-8804-c446b1331816
+2026-04-28 12:57:23,211 - __main__ - INFO - Status: completed
+2026-04-28 12:57:23,211 - __main__ - INFO - Dry Run: False
+2026-04-28 12:57:23,211 - __main__ - INFO - ======================================================================
+2026-04-28 12:57:23,213 - __main__ - INFO - Enrichment Status: 2 pending, 0 processing, 0 enriched, 0 failed out of 2 total
+2026-04-28 12:57:23,215 - scraper.enrichment.manager - INFO - Found 2 pending companies for job 1711667f-5d12-40c0-8804-c446b1331816
+2026-04-28 12:57:23,215 - __main__ - INFO - 
+Processing 2 pending companies...
+
+2026-04-28 12:57:23,215 - __main__ - INFO - [1/2] Processing: 36th Street Capital
+2026-04-28 12:57:23,218 - scraper.enrichment.manager - INFO - Marked company 764 as processing enrichment
+2026-04-28 12:57:34,769 - scraper.enrichment.manager - INFO - Successfully enriched company 764
+2026-04-28 12:57:34,783 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-28 12:57:34,783 - __main__ - INFO - [2/2] Processing: Acquis Insurance Management
+2026-04-28 12:57:34,784 - scraper.enrichment.manager - INFO - Marked company 765 as processing enrichment
+2026-04-28 12:57:46,261 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-28 12:57:58,570 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-28 12:58:12,898 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-28 12:58:12,899 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-28 12:58:12,901 - scraper.enrichment.manager - INFO - Successfully enriched company 765
+2026-04-28 12:58:12,908 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-28 12:58:12,908 - __main__ - INFO - 
+======================================================================
+2026-04-28 12:58:12,909 - __main__ - INFO - Enrichment Complete for Job: Test direct input
+2026-04-28 12:58:12,909 - __main__ - INFO - \u2705 Successfully enriched: 2
+2026-04-28 12:58:12,909 - __main__ - INFO - \u274c Failed: 0
+2026-04-28 12:58:12,909 - __main__ - INFO - ======================================================================

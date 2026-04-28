@@ -13,7 +13,7 @@ import logging
 import os
 import sys
 import argparse
-from typing import Optional
+from typing import Any, Optional
 from urllib.parse import urlparse
 
 # Add parent directory to path
@@ -45,6 +45,20 @@ def extract_domain(company_url: Optional[str]) -> Optional[str]:
     if domain.startswith("www."):
         domain = domain[4:]
     return domain or None
+
+
+def format_smartlead_error(last_request_error: Optional[dict[str, Any]]) -> str:
+    """Build a user-friendly root-cause error message from adapter metadata."""
+    if not last_request_error:
+        return "Smartlead API returned no data"
+
+    error_type = str(last_request_error.get("type") or "unknown").strip()
+    status_code = last_request_error.get("status_code")
+    message = str(last_request_error.get("message") or "").strip()
+
+    if status_code:
+        return f"Smartlead {error_type} error ({status_code}): {message or 'No details'}"
+    return f"Smartlead {error_type} error: {message or 'No details'}"
 
 
 def enrich_job(
@@ -145,13 +159,14 @@ def enrich_job(
                         failed_count += 1
                 else:
                     # Save failed enrichment
+                    failure_reason = format_smartlead_error(getattr(smartlead, "last_request_error", None))
                     enrichment_mgr.save_enrichment_result(
                         company["company_id"],
                         None,
                         success=False,
-                        error_message="Smartlead API returned no data",
+                        error_message=failure_reason,
                     )
-                    logger.warning(f"  ⚠️  API returned no data")
+                    logger.warning(f"  ⚠️  {failure_reason}")
                     failed_count += 1
                     
             except Exception as e:

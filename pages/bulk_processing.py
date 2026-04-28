@@ -255,6 +255,18 @@ with tab_new_job:
     st.header("🚀 Start Data Processing")
     st.caption("Flow: Job Setup → File Upload → Run Processing → Review Final Output")
 
+    processing_mode_options = {
+        "URL Scraping + AI Extraction": "scrape",
+        "Direct Company Input (Skip Scraping)": "direct_company",
+    }
+    selected_mode_label = st.radio(
+        "Processing Mode",
+        options=list(processing_mode_options.keys()),
+        horizontal=True,
+        help="Use direct mode when your Excel already has company name and company URL.",
+    )
+    processing_mode = processing_mode_options[selected_mode_label]
+
     job_name = st.text_input(
         "Batch job name",
         value="",
@@ -267,20 +279,37 @@ with tab_new_job:
     with col1:
         # File upload
         uploaded_file = st.file_uploader(
-            "Upload Excel file (must include `URL` column)",
+            (
+                "Upload Excel file (must include `URL` column)"
+                if processing_mode == "scrape"
+                else "Upload Excel file (must include `Company Name` and `Company URL` columns)"
+            ),
             type=["xlsx", "xls"],
-            help="Excel file should contain a 'URL' column with valid HTTP(S) URLs"
+            help=(
+                "Scrape mode: provide URL column with valid HTTP(S) links."
+                if processing_mode == "scrape"
+                else "Direct mode: provide Company Name + Company URL. Optional: Location, Industry, Segmentation, Company Size, Platform Products."
+            ),
         )
 
     with col2:
         st.markdown("### 📋 Sample Format")
-        st.markdown("""
-        ```
-        URL
-        https://example.com
-        https://company.org
-        ```
-        """)
+        if processing_mode == "scrape":
+            st.markdown("""
+            ```
+            URL
+            https://example.com
+            https://company.org
+            ```
+            """)
+        else:
+            st.markdown("""
+            ```
+            Company Name,Company URL
+            Acme Inc,https://acme.com
+            Contoso,https://contoso.ai
+            ```
+            """)
 
     if uploaded_file:
         st.success("✓ File uploaded successfully")
@@ -293,16 +322,30 @@ with tab_new_job:
                     temp_input_path = tmp.name
 
                 excel_proc = ExcelProcessor()
-                rows = excel_proc.read_urls_from_excel(temp_input_path)
-                preview_df = pd.DataFrame(rows[:20]).rename(columns={
-                    "url": "URL",
-                    "segmentation": "Segmentation",
-                    "company_size": "Company_Size",
-                    "platform_products": "Platform_Products",
-                    "salesforce_products": "Salesforce_Products",
-                })
+                if processing_mode == "scrape":
+                    rows = excel_proc.read_urls_from_excel(temp_input_path)
+                    preview_df = pd.DataFrame(rows[:20]).rename(columns={
+                        "url": "URL",
+                        "segmentation": "Segmentation",
+                        "company_size": "Company_Size",
+                        "platform_products": "Platform_Products",
+                        "salesforce_products": "Salesforce_Products",
+                    })
+                else:
+                    rows = excel_proc.read_companies_from_excel(temp_input_path)
+                    preview_df = pd.DataFrame(rows[:20]).rename(columns={
+                        "company_name": "Company_Name",
+                        "company_url": "Company_URL",
+                        "location": "Location",
+                        "industry": "Industry",
+                        "segmentation": "Segmentation",
+                        "company_size": "Company_Size",
+                        "platform_products": "Platform_Products",
+                    })
 
-                st.info(f"Found {len(rows)} valid unique URLs")
+                st.info(
+                    f"Found {len(rows)} valid unique {'URLs' if processing_mode == 'scrape' else 'companies'}"
+                )
                 st.dataframe(preview_df, use_container_width=True)
 
                 if len(rows) > 20:
@@ -352,10 +395,11 @@ with tab_new_job:
                 successful = processed - job_stats["failed_urls"]
                 failed = job_stats["failed_urls"]
                 success_rate = (successful / max(processed, 1)) * 100
+                unit_label = "URLs" if processing_mode == "scrape" else "companies"
 
                 status_text.markdown(f"""
                 **Batch {batch_num}/{total_batches}** | 
-                **Progress:** {processed}/{job_stats['total_urls']} URLs
+                **Progress:** {processed}/{job_stats['total_urls']} {unit_label}
                 """)
 
                 batch_info.info(
@@ -382,6 +426,7 @@ with tab_new_job:
                     platform=selected_platform,
                     extra_instructions=extra_instructions,
                     job_name=job_name.strip() or None,
+                    processing_mode=processing_mode,
                 )
 
                 st.session_state.current_job_id = job_id
@@ -417,6 +462,19 @@ with tab_new_job:
 
                     saved_results = db.get_job_results(job_id)
                     company_df, key_person_df, enriched_contacts_df = build_export_dataframes(saved_results)
+
+                    if processing_mode == "direct_company":
+                        profiled_count = len(saved_results)
+                        fallback_unknown_count = sum(
+                            1
+                            for result in saved_results
+                            if (result.get("location") in (None, "", "Unknown"))
+                            or (result.get("industry") in (None, "", "Unknown"))
+                        )
+                        st.info(
+                            f"Direct mode summary: {profiled_count} companies profiled, "
+                            f"{fallback_unknown_count} rows used Unknown fallback values."
+                        )
 
                     st.subheader("Company Output")
                     st.dataframe(company_df, use_container_width=True, hide_index=True)

@@ -26,10 +26,12 @@ class SmartleadAdapter:
         self.base_url = "https://prospect-api.smartlead.ai"
         self.search_contacts_path = "/api/v1/search-email-leads/search-contacts"
         self.find_emails_path = "/api/v1/search-email-leads/search-contacts/find-emails"
+        self.find_emails_batch_size = 10
         self.default_levels = ["VP-Level", "C-Level", "Manager-Level", "Director-Level"]
         self.rate_limit_per_minute = rate_limit_per_minute
         self.min_delay_between_requests = 60.0 / rate_limit_per_minute
         self.last_request_time = 0
+        self.last_request_error: Optional[Dict[str, Any]] = None
 
     def _wait_for_rate_limit(self):
         """Ensure rate limiting between API requests."""
@@ -59,6 +61,7 @@ class SmartleadAdapter:
             Response JSON dict or None on error
         """
         self._wait_for_rate_limit()
+        self.last_request_error = None
         
         url = f"{self.base_url}{endpoint}"
         headers = {
@@ -80,6 +83,10 @@ class SmartleadAdapter:
                     response = requests.post(url, headers=headers, json=payload, timeout=timeout)
                 else:
                     logger.error(f"Unsupported HTTP method: {method}")
+                    self.last_request_error = {
+                        "type": "config",
+                        "message": f"Unsupported HTTP method: {method}",
+                    }
                     return None
                 
                 response.raise_for_status()
@@ -89,6 +96,10 @@ class SmartleadAdapter:
                 retry_count += 1
                 wait_time = 2 ** retry_count  # exponential backoff: 2s, 4s, 8s
                 logger.warning(f"Request timeout (attempt {retry_count}/{max_retries}). Retrying in {wait_time}s...")
+                self.last_request_error = {
+                    "type": "timeout",
+                    "message": f"Request timeout (attempt {retry_count}/{max_retries})",
+                }
                 if retry_count < max_retries:
                     time.sleep(wait_time)
                     
@@ -97,17 +108,36 @@ class SmartleadAdapter:
                     retry_count += 1
                     wait_time = 2 ** retry_count
                     logger.warning(f"Rate limited (attempt {retry_count}/{max_retries}). Retrying in {wait_time}s...")
+                    self.last_request_error = {
+                        "type": "rate_limit",
+                        "status_code": 429,
+                        "message": str(e),
+                    }
                     if retry_count < max_retries:
                         time.sleep(wait_time)
                 else:
                     logger.error(f"HTTP error: {e}")
+                    self.last_request_error = {
+                        "type": "http",
+                        "status_code": response.status_code,
+                        "message": str(e),
+                    }
                     return None
                     
             except Exception as e:
                 logger.error(f"Request error: {e}")
+                self.last_request_error = {
+                    "type": "exception",
+                    "message": str(e),
+                }
                 return None
         
         logger.error(f"Failed after {max_retries} retries")
+        if not self.last_request_error:
+            self.last_request_error = {
+                "type": "retry_exhausted",
+                "message": f"Failed after {max_retries} retries",
+            }
         return None
 
     @staticmethod
@@ -130,7 +160,7 @@ class SmartleadAdapter:
         self,
         domain: Optional[str] = None,
         company_name: Optional[str] = None,
-        limit: int = 10,
+        limit: int = 30,
         levels: Optional[List[str]] = None,
     ) -> Optional[Dict[str, Any]]:
         """
@@ -164,12 +194,25 @@ class SmartleadAdapter:
         """Find emails for a list of contacts."""
         if not contacts:
             return None
+
         endpoint = f"{self.find_emails_path}?api_key={self.api_key}"
-        payload = {"contacts": contacts}
-        response = self._make_request(endpoint, method="POST", payload=payload)
-        if response and response.get("success"):
-            return response
-        return None
+        all_rows: List[Dict[str, Any]] = []
+
+        for index in range(0, len(contacts), self.find_emails_batch_size):
+            contact_batch = contacts[index:index + self.find_emails_batch_size]
+            payload = {"contacts": contact_batch}
+            response = self._make_request(endpoint, method="POST", payload=payload)
+
+            if not response or not response.get("success"):
+                return None
+
+            all_rows.extend(response.get("data") or [])
+
+        return {
+            "success": True,
+            "message": "Find emails completed",
+            "data": all_rows,
+        }
 
     def enrich_company_full(
         self,
@@ -227,6 +270,13 @@ class SmartleadAdapter:
                 )
 
         find_emails_response = self.find_emails(email_contacts) if email_contacts else None
+        if email_contacts and not find_emails_response:
+            error_type = (self.last_request_error or {}).get("type")
+            if error_type in {"http", "rate_limit"}:
+                logger.warning(
+                    "find_emails failed with HTTP error; treating enrichment as failed to allow retry."
+                )
+                return None
 
         email_map: Dict[tuple, Dict[str, Any]] = {}
         if find_emails_response and find_emails_response.get("success"):

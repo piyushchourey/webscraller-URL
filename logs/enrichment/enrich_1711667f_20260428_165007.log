@@ -1,0 +1,34 @@
+C:\Users\MindRuby\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.4.0.post2)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+2026-04-28 16:50:08,759 - __main__ - INFO - Database: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+
+2026-04-28 16:50:08,759 - __main__ - INFO - Resetting failed enrichments for retry...
+
+2026-04-28 16:50:08,831 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-28 16:50:08,846 - scraper.enrichment.manager - INFO - Reset 1 failed enrichments for job 1711667f-5d12-40c0-8804-c446b1331816
+2026-04-28 16:50:08,846 - __main__ - INFO - Reset 1 failed enrichments
+
+2026-04-28 16:50:08,880 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-28 16:50:08,882 - __main__ - INFO - ======================================================================
+2026-04-28 16:50:08,882 - __main__ - INFO - Starting enrichment for Job: Test direct input
+2026-04-28 16:50:08,882 - __main__ - INFO - Job ID: 1711667f-5d12-40c0-8804-c446b1331816
+2026-04-28 16:50:08,882 - __main__ - INFO - Status: completed
+2026-04-28 16:50:08,882 - __main__ - INFO - Dry Run: False
+2026-04-28 16:50:08,882 - __main__ - INFO - ======================================================================
+2026-04-28 16:50:08,885 - __main__ - INFO - Enrichment Status: 1 pending, 0 processing, 1 enriched, 0 failed out of 2 total
+2026-04-28 16:50:08,886 - scraper.enrichment.manager - INFO - Found 1 pending companies for job 1711667f-5d12-40c0-8804-c446b1331816
+2026-04-28 16:50:08,887 - __main__ - INFO - 
+Processing 1 pending companies...
+
+2026-04-28 16:50:08,887 - __main__ - INFO - [1/1] Processing: Acquis Insurance Management
+2026-04-28 16:50:08,890 - scraper.enrichment.manager - INFO - Marked company 765 as processing enrichment
+2026-04-28 16:50:22,721 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-28 16:50:40,094 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-28 16:50:47,947 - scraper.enrichment.manager - INFO - Successfully enriched company 765
+2026-04-28 16:50:47,955 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-28 16:50:47,955 - __main__ - INFO - 
+======================================================================
+2026-04-28 16:50:47,955 - __main__ - INFO - Enrichment Complete for Job: Test direct input
+2026-04-28 16:50:47,955 - __main__ - INFO - \u2705 Successfully enriched: 1
+2026-04-28 16:50:47,955 - __main__ - INFO - \u274c Failed: 0
+2026-04-28 16:50:47,955 - __main__ - INFO - ======================================================================

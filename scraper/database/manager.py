@@ -67,6 +67,51 @@ class DatabaseManager:
             elif dialect_name == "sqlite":
                 connection.execute(text("ALTER TABLE processing_jobs ADD COLUMN job_name TEXT"))
 
+        if dialect_name == "postgresql":
+            self._sync_postgres_sequence("company_data", "company_id")
+            self._sync_postgres_sequence("key_persons", "person_id")
+
+    def _sync_postgres_sequence(self, table_name: str, column_name: str) -> None:
+        """Align PostgreSQL serial sequence with the current max primary key value."""
+        try:
+            with self.engine.begin() as connection:
+                sequence_name = connection.execute(
+                    text(
+                        "SELECT pg_get_serial_sequence(:table_name, :column_name)"
+                    ),
+                    {"table_name": table_name, "column_name": column_name},
+                ).scalar()
+
+                if not sequence_name:
+                    return
+
+                next_value = connection.execute(
+                    text(
+                        f"SELECT COALESCE(MAX({column_name}), 0) + 1 FROM {table_name}"
+                    )
+                ).scalar()
+
+                connection.execute(
+                    text("SELECT setval(:sequence_name, :next_value, false)"),
+                    {
+                        "sequence_name": sequence_name,
+                        "next_value": int(next_value or 1),
+                    },
+                )
+
+                logger.info(
+                    "Synced PostgreSQL sequence %s to next value %s",
+                    sequence_name,
+                    next_value,
+                )
+        except Exception as exc:
+            logger.warning(
+                "Could not sync PostgreSQL sequence for %s.%s: %s",
+                table_name,
+                column_name,
+                exc,
+            )
+
     def get_session(self) -> Session:
         """Get a new database session."""
         return self.SessionLocal()
@@ -358,6 +403,7 @@ class DatabaseManager:
         """Save extracted company data to database."""
         session = self.get_session()
         try:
+            resolved_status = data.processing_status if getattr(data, "processing_status", None) else "completed"
             company = CompanyData(
                 task_id=task_id,
                 original_url=data.url,
@@ -371,7 +417,8 @@ class DatabaseManager:
                 raw_scraped_text=data.raw_scraped_text,
                 ai_analysis=data.ai_analysis,
                 confidence_score=data.confidence_score,
-                processing_status="completed",
+                processing_status=resolved_status,
+                error_message=data.error_message,
             )
             session.add(company)
             session.flush()

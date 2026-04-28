@@ -1,0 +1,33 @@
+C:\Users\MindRuby\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.4.0.post2)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+2026-04-28 16:16:49,642 - __main__ - INFO - Database: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+
+2026-04-28 16:16:49,642 - __main__ - INFO - Resetting failed enrichments for retry...
+
+2026-04-28 16:16:49,814 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-28 16:16:49,829 - scraper.enrichment.manager - INFO - Reset 1 failed enrichments for job 1711667f-5d12-40c0-8804-c446b1331816
+2026-04-28 16:16:49,829 - __main__ - INFO - Reset 1 failed enrichments
+
+2026-04-28 16:16:49,874 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-28 16:16:49,876 - __main__ - INFO - ======================================================================
+2026-04-28 16:16:49,876 - __main__ - INFO - Starting enrichment for Job: Test direct input
+2026-04-28 16:16:49,876 - __main__ - INFO - Job ID: 1711667f-5d12-40c0-8804-c446b1331816
+2026-04-28 16:16:49,876 - __main__ - INFO - Status: completed
+2026-04-28 16:16:49,876 - __main__ - INFO - Dry Run: False
+2026-04-28 16:16:49,876 - __main__ - INFO - ======================================================================
+2026-04-28 16:16:49,878 - __main__ - INFO - Enrichment Status: 1 pending, 0 processing, 1 enriched, 0 failed out of 2 total
+2026-04-28 16:16:49,880 - scraper.enrichment.manager - INFO - Found 1 pending companies for job 1711667f-5d12-40c0-8804-c446b1331816
+2026-04-28 16:16:49,880 - __main__ - INFO - 
+Processing 1 pending companies...
+
+2026-04-28 16:16:49,880 - __main__ - INFO - [1/1] Processing: Acquis Insurance Management
+2026-04-28 16:16:49,882 - scraper.enrichment.manager - INFO - Marked company 765 as processing enrichment
+2026-04-28 16:16:52,085 - scraper.enrichment.smartlead_adapter - ERROR - HTTP error: 400 Client Error: Bad Request for url: https://prospect-api.smartlead.ai/api/v1/search-email-leads/search-contacts/find-emails?api_key=c685e51f-08ee-4dc5-b441-8341058a85b0_9w1grjz
+2026-04-28 16:16:52,091 - scraper.enrichment.manager - INFO - Successfully enriched company 765
+2026-04-28 16:16:52,099 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-28 16:16:52,099 - __main__ - INFO - 
+======================================================================
+2026-04-28 16:16:52,099 - __main__ - INFO - Enrichment Complete for Job: Test direct input
+2026-04-28 16:16:52,099 - __main__ - INFO - \u2705 Successfully enriched: 1
+2026-04-28 16:16:52,099 - __main__ - INFO - \u274c Failed: 0
+2026-04-28 16:16:52,099 - __main__ - INFO - ======================================================================

@@ -56,6 +56,25 @@ Guidelines:
 - Focus on the most prominent company mentioned on the page
 """
 
+DIRECT_COMPANY_PROFILE_PROMPT = """
+You are given basic company input data. Infer the most likely company profile details.
+
+Return ONLY valid JSON in this exact structure:
+{
+    "company_name": "company name",
+    "company_url": "official website URL",
+    "location": "Headquarters or primary business location (city, country)",
+    "industry": "Primary industry or business sector",
+    "confidence_score": 0.0
+}
+
+Rules:
+- Use only publicly likely/general knowledge and provided input details.
+- If uncertain for location or industry, return "Unknown".
+- confidence_score must be between 0.0 and 1.0.
+- Do not include markdown or extra explanation.
+"""
+
 PLATFORM_CONFIGS: Dict[str, Dict[str, Any]] = {
     "salesforce": {
         "label": "Salesforce",
@@ -186,6 +205,123 @@ class ExcelProcessor:
             return ExcelProcessor.deduplicate_rows(rows)
         except Exception as e:
             raise ValueError(f"Failed to read Excel file: {e}")
+
+    @staticmethod
+    def _resolve_column(df: pd.DataFrame, candidates: List[str]) -> Optional[str]:
+        """Resolve first matching column name from candidate aliases (case-insensitive)."""
+        normalized_map = {
+            str(col).strip().lower().replace("_", " "): col
+            for col in df.columns
+        }
+        for candidate in candidates:
+            key = candidate.strip().lower().replace("_", " ")
+            if key in normalized_map:
+                return normalized_map[key]
+        return None
+
+    @staticmethod
+    def _normalize_company_url(raw_url: Any) -> str:
+        """Normalize company URL for direct-ingestion mode."""
+        url_str = str(raw_url or "").strip()
+        if not url_str:
+            return ""
+        if not url_str.startswith(("http://", "https://")):
+            url_str = f"https://{url_str}"
+        return url_str
+
+    @staticmethod
+    def deduplicate_company_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Deduplicate direct company rows by normalized company URL."""
+        unique_rows: Dict[str, Dict[str, Any]] = {}
+        for row in rows:
+            key = (row.get("company_url") or "").strip().lower()
+            if not key:
+                continue
+            if key not in unique_rows:
+                unique_rows[key] = dict(row)
+                continue
+
+            existing = unique_rows[key]
+            for field_name in ["company_name", "location", "industry", "company_size", "segmentation"]:
+                if not existing.get(field_name) and row.get(field_name):
+                    existing[field_name] = row[field_name]
+
+            if not existing.get("platform_products") and row.get("platform_products"):
+                existing["platform_products"] = row["platform_products"]
+
+        return list(unique_rows.values())
+
+    @staticmethod
+    def read_companies_from_excel(file_path: str) -> List[Dict[str, Any]]:
+        """Extract company input rows for direct-ingestion mode."""
+        try:
+            df = pd.read_excel(file_path)
+            df.columns = [str(col).strip() for col in df.columns]
+
+            company_name_col = ExcelProcessor._resolve_column(
+                df,
+                ["company name", "company_name", "name", "company"],
+            )
+            company_url_col = ExcelProcessor._resolve_column(
+                df,
+                ["company url", "company_url", "website", "url", "domain"],
+            )
+
+            if not company_name_col or not company_url_col:
+                raise ValueError(
+                    "Direct mode requires 'Company Name' and 'Company URL' columns"
+                )
+
+            segmentation_col = ExcelProcessor._resolve_column(df, ["segmentation"])
+            company_size_col = ExcelProcessor._resolve_column(df, ["company size", "company_size"])
+            industry_col = ExcelProcessor._resolve_column(df, ["industry"])
+            location_col = ExcelProcessor._resolve_column(df, ["location"])
+            products_col = ExcelProcessor._resolve_column(
+                df,
+                ["platform products", "platform_products", "salesforce products", "salesforce_products"],
+            )
+
+            rows: List[Dict[str, Any]] = []
+
+            for _, row in df.iterrows():
+                company_name = str(row.get(company_name_col, "") or "").strip()
+                company_url = ExcelProcessor._normalize_company_url(row.get(company_url_col, ""))
+
+                if not company_name or not company_url:
+                    continue
+
+                location = str(row.get(location_col, "") or "").strip() if location_col else ""
+                industry = str(row.get(industry_col, "") or "").strip() if industry_col else ""
+                segmentation = str(row.get(segmentation_col, "") or "").strip() if segmentation_col else ""
+                company_size = str(row.get(company_size_col, "") or "").strip() if company_size_col else ""
+
+                platform_products: List[str] = []
+                if products_col:
+                    raw_products = row.get(products_col)
+                    if pd.notna(raw_products):
+                        platform_products = [
+                            item.strip()
+                            for item in str(raw_products).split(",")
+                            if item and item.strip()
+                        ]
+
+                rows.append(
+                    {
+                        "url": company_url,
+                        "company_name": company_name,
+                        "company_url": company_url,
+                        "location": location,
+                        "industry": industry,
+                        "segmentation": segmentation,
+                        "company_size": company_size,
+                        "platform_products": platform_products,
+                        "salesforce_products": platform_products,
+                    }
+                )
+
+            return ExcelProcessor.deduplicate_company_rows(rows)
+        except Exception as e:
+            raise ValueError(f"Failed to read company input Excel: {e}")
 
     @staticmethod
     def write_results_to_excel(
@@ -368,6 +504,79 @@ class BatchProcessor:
                 confidence_score=0.2
             )
 
+    def profile_company_from_input(self, row_metadata: Dict[str, Any]) -> EnrichedCompanyData:
+        """Profile company via LLM using provided company name/URL (no scraping)."""
+        company_name = str(row_metadata.get("company_name") or "").strip()
+        company_url = str(row_metadata.get("company_url") or row_metadata.get("url") or "").strip()
+
+        if not company_name or not company_url:
+            raise ValueError("Direct mode row requires company_name and company_url")
+
+        profile_context = (
+            f"Company Name: {company_name}\n"
+            f"Company URL: {company_url}\n"
+            f"Known Location (optional): {row_metadata.get('location', '')}\n"
+            f"Known Industry (optional): {row_metadata.get('industry', '')}\n"
+            f"Known Segmentation (optional): {row_metadata.get('segmentation', '')}\n"
+        )
+
+        try:
+            ai_result = self.ai_analyzer.analyze(
+                text=profile_context,
+                user_prompt=DIRECT_COMPANY_PROFILE_PROMPT,
+                source_url=company_url,
+                page_title=company_name,
+            )
+
+            response_text = ai_result.response_text.strip()
+            json_start = response_text.find('{')
+            json_end = response_text.rfind('}') + 1
+            parsed: Dict[str, Any] = {}
+
+            if json_start != -1 and json_end > json_start:
+                parsed = json.loads(response_text[json_start:json_end])
+
+            location = (parsed.get("location") or row_metadata.get("location") or "Unknown").strip()
+            industry = (parsed.get("industry") or row_metadata.get("industry") or "Unknown").strip()
+
+            return EnrichedCompanyData(
+                url=company_url,
+                company_name=(parsed.get("company_name") or company_name).strip(),
+                company_url=(parsed.get("company_url") or company_url).strip(),
+                website=(parsed.get("company_url") or company_url).strip(),
+                location=location or "Unknown",
+                industry=industry or "Unknown",
+                company_size=row_metadata.get("company_size") or "",
+                segmentation=row_metadata.get("segmentation") or "",
+                salesforce_products=row_metadata.get("platform_products") or row_metadata.get("salesforce_products") or [],
+                key_persons=[],
+                raw_scraped_text="",
+                ai_analysis=ai_result.response_text,
+                processing_status="completed",
+                error_message=None,
+                confidence_score=float(parsed.get("confidence_score", 0.6) or 0.6),
+            )
+
+        except Exception as exc:
+            logger.warning(f"Direct LLM profiling fallback for {company_name}: {exc}")
+            return EnrichedCompanyData(
+                url=company_url,
+                company_name=company_name,
+                company_url=company_url,
+                website=company_url,
+                location=(str(row_metadata.get("location") or "").strip() or "Unknown"),
+                industry=(str(row_metadata.get("industry") or "").strip() or "Unknown"),
+                company_size=row_metadata.get("company_size") or "",
+                segmentation=row_metadata.get("segmentation") or "",
+                salesforce_products=row_metadata.get("platform_products") or row_metadata.get("salesforce_products") or [],
+                key_persons=[],
+                raw_scraped_text="",
+                ai_analysis=f"LLM profiling fallback used: {exc}",
+                processing_status="completed",
+                error_message=f"LLM profiling fallback: {exc}",
+                confidence_score=0.2,
+            )
+
     def process_batch(self, batch_urls: List[Dict[str, Any]], batch_number: int) -> List[ProcessingTask]:
         """Process a single batch of URLs."""
         logger.info(f"Processing batch {batch_number} with {len(batch_urls)} URLs")
@@ -536,6 +745,7 @@ def process_excel_file_with_db(
     platform: str = "salesforce",
     extra_instructions: str = "",
     job_name: Optional[str] = None,
+    processing_mode: str = "scrape",
 ) -> str:
     """
     Process Excel file with database persistence and resumability.
@@ -559,7 +769,10 @@ def process_excel_file_with_db(
 
     # Read URLs from Excel
     excel_processor = ExcelProcessor()
-    rows = excel_processor.read_urls_from_excel(input_file)
+    if processing_mode == "direct_company":
+        rows = excel_processor.read_companies_from_excel(input_file)
+    else:
+        rows = excel_processor.read_urls_from_excel(input_file)
     urls = [row["url"] for row in rows]
 
     if not urls:
@@ -579,6 +792,7 @@ def process_excel_file_with_db(
             "ai_model": ai_model,
             "platform": platform,
             "extra_instructions": extra_instructions,
+            "processing_mode": processing_mode,
             "job_name": job_name,
             "input_file": input_file,
             "output_file": output_file,
@@ -641,13 +855,22 @@ def process_excel_file_with_db(
             future_to_task = {}
 
             for db_task in batch_tasks:
-                future = executor.submit(
-                    _process_task_with_db,
-                    db_task,
-                    processor,
-                    db,
-                    row_metadata_by_url.get(db_task.original_url),
-                )
+                if processing_mode == "direct_company":
+                    future = executor.submit(
+                        _process_direct_task_with_db,
+                        db_task,
+                        processor,
+                        db,
+                        row_metadata_by_url.get(db_task.original_url),
+                    )
+                else:
+                    future = executor.submit(
+                        _process_task_with_db,
+                        db_task,
+                        processor,
+                        db,
+                        row_metadata_by_url.get(db_task.original_url),
+                    )
                 future_to_task[future] = db_task
 
             for future in as_completed(future_to_task):
@@ -798,4 +1021,81 @@ def _process_task_with_db(
             processing_status="failed",
             error_message=str(e),
             confidence_score=0.0
+        )
+
+
+def _process_direct_task_with_db(
+    db_task,
+    processor: BatchProcessor,
+    db: DatabaseManager,
+    row_metadata: Optional[Dict[str, Any]] = None,
+) -> EnrichedCompanyData:
+    """Process a direct-ingestion task (skip scraping, LLM profile only)."""
+    start_time = time.time()
+    row_metadata = row_metadata or {
+        "company_name": db_task.original_url,
+        "company_url": db_task.original_url,
+        "url": db_task.original_url,
+    }
+
+    try:
+        db.update_task_status(db_task.task_id, "analyzing")
+
+        company_url = str(
+            row_metadata.get("company_url")
+            or row_metadata.get("url")
+            or db_task.original_url
+            or ""
+        ).strip()
+        company_name = str(
+            row_metadata.get("company_name")
+            or company_url
+            or db_task.original_url
+            or ""
+        ).strip()
+
+        enriched_data = EnrichedCompanyData(
+            url=company_url,
+            company_name=company_name,
+            company_url=company_url,
+            website=company_url,
+            location=str(row_metadata.get("location") or "").strip(),
+            industry=str(row_metadata.get("industry") or "").strip(),
+            company_size=str(row_metadata.get("company_size") or "").strip(),
+            segmentation=str(row_metadata.get("segmentation") or "").strip(),
+            salesforce_products=row_metadata.get("platform_products") or row_metadata.get("salesforce_products") or [],
+            key_persons=[],
+            raw_scraped_text="",
+            ai_analysis="Direct mode: LLM profiling skipped; data sourced from input row.",
+            processing_status="completed",
+            error_message=None,
+            confidence_score=0.0,
+        )
+
+        db.save_company_data(db_task.task_id, enriched_data)
+
+        processing_time = time.time() - start_time
+        db.update_task_status(
+            db_task.task_id,
+            "completed",
+            processing_time=processing_time,
+        )
+        logger.info(f"✓ Completed (direct mode): {db_task.original_url} ({processing_time:.2f}s)")
+        return enriched_data
+
+    except Exception as e:
+        logger.error(f"✗ Direct mode failed: {db_task.original_url}: {e}")
+        processing_time = time.time() - start_time
+        db.update_task_status(
+            db_task.task_id,
+            "failed",
+            error_message=str(e),
+            processing_time=processing_time,
+            retry_count=db_task.retry_count + 1,
+        )
+        return EnrichedCompanyData(
+            url=db_task.original_url,
+            processing_status="failed",
+            error_message=str(e),
+            confidence_score=0.0,
         )
