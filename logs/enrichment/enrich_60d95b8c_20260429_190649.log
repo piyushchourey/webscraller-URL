@@ -1,0 +1,35 @@
+C:\Users\MindRuby\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.4.0.post2)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+2026-04-29 19:06:51,618 - __main__ - INFO - Database: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+
+2026-04-29 19:06:51,693 - scraper.database.manager - INFO - Synced PostgreSQL sequence public.company_data_company_id_seq to next value 933
+2026-04-29 19:06:51,695 - scraper.database.manager - INFO - Synced PostgreSQL sequence public.key_persons_person_id_seq to next value 1109
+2026-04-29 19:06:51,695 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-29 19:06:51,706 - __main__ - INFO - ======================================================================
+2026-04-29 19:06:51,706 - __main__ - INFO - Starting enrichment for Job: Test extra column import 2
+2026-04-29 19:06:51,706 - __main__ - INFO - Job ID: 60d95b8c-985e-4370-9d72-8d57c00dc990
+2026-04-29 19:06:51,706 - __main__ - INFO - Status: completed
+2026-04-29 19:06:51,706 - __main__ - INFO - Dry Run: False
+2026-04-29 19:06:51,706 - __main__ - INFO - Company Filter Hook: False
+2026-04-29 19:06:51,706 - __main__ - INFO - ======================================================================
+2026-04-29 19:06:51,709 - __main__ - INFO - Enrichment Status: 2 pending, 0 processing, 0 enriched, 0 failed out of 2 total
+2026-04-29 19:06:51,712 - scraper.enrichment.manager - INFO - Found 2 pending companies for job 60d95b8c-985e-4370-9d72-8d57c00dc990
+2026-04-29 19:06:51,712 - __main__ - INFO - 
+Processing 2 pending companies...
+
+2026-04-29 19:06:51,712 - __main__ - INFO - [1/2] Processing: Elantis Premium Funding Limited
+2026-04-29 19:06:51,714 - scraper.enrichment.manager - INFO - Marked company 931 as processing enrichment
+2026-04-29 19:07:24,117 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/5). Retrying in 2s...
+2026-04-29 19:07:51,017 - scraper.enrichment.manager - INFO - Successfully enriched company 931
+2026-04-29 19:07:51,035 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-29 19:07:51,035 - __main__ - INFO - [2/2] Processing: Hunter Premium Funding
+2026-04-29 19:07:51,037 - scraper.enrichment.manager - INFO - Marked company 932 as processing enrichment
+2026-04-29 19:08:22,564 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/5). Retrying in 2s...
+2026-04-29 19:08:56,494 - scraper.enrichment.manager - INFO - Successfully enriched company 932
+2026-04-29 19:08:56,500 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-29 19:08:56,500 - __main__ - INFO - 
+======================================================================
+2026-04-29 19:08:56,500 - __main__ - INFO - Enrichment Complete for Job: Test extra column import 2
+2026-04-29 19:08:56,500 - __main__ - INFO - \u2705 Successfully enriched: 2
+2026-04-29 19:08:56,500 - __main__ - INFO - \u274c Failed: 0
+2026-04-29 19:08:56,500 - __main__ - INFO - ======================================================================

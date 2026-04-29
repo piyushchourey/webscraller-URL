@@ -49,10 +49,15 @@ class SmartleadAdapter:
         self.find_emails_path = "/api/v1/search-email-leads/search-contacts/find-emails"
         self.find_emails_batch_size = 10
         self.default_levels = ["VP-Level", "C-Level", "Manager-Level", "Director-Level"]
+        self.department_filters = ["Finance & Administration","Engineering","Other","Operations","IT & IS"]
         self.rate_limit_per_minute = rate_limit_per_minute
         self.min_delay_between_requests = 60.0 / rate_limit_per_minute
         self.last_request_time = 0
         self.last_request_error: Optional[Dict[str, Any]] = None
+        # Timeout settings: find_emails needs more time due to email verification work
+        self.search_contacts_timeout = 15
+        self.find_emails_timeout = 30  # Allow more time for email verification
+        self.max_retries = 5  # Increase retries to handle transient timeouts
         filter_config = CompanyFilterConfig.from_env()
         if company_filter_min_employees is not None:
             filter_config.min_employees = int(company_filter_min_employees)
@@ -82,7 +87,7 @@ class SmartleadAdapter:
         endpoint: str,
         method: str = "GET",
         payload: Optional[Dict[str, Any]] = None,
-        timeout: int = 10,
+        timeout: Optional[int] = None,
     ) -> Optional[Dict[str, Any]]:
         """
         Make HTTP request to Smartlead API with retry logic.
@@ -91,13 +96,20 @@ class SmartleadAdapter:
             endpoint: API endpoint (e.g., "/v1/find-contact")
             method: HTTP method (GET, POST, etc.)
             payload: Request payload
-            timeout: Request timeout in seconds
+            timeout: Request timeout in seconds (uses endpoint-specific defaults if None)
             
         Returns:
             Response JSON dict or None on error
         """
         self._wait_for_rate_limit()
         self.last_request_error = None
+        
+        # Use endpoint-specific timeout if not provided
+        if timeout is None:
+            if "find-emails" in endpoint:
+                timeout = self.find_emails_timeout
+            else:
+                timeout = self.search_contacts_timeout
         
         url = f"{self.base_url}{endpoint}"
         headers = {
@@ -106,10 +118,9 @@ class SmartleadAdapter:
             "Content-Type": "application/json",
         }
         
-        max_retries = 3
         retry_count = 0
         
-        while retry_count < max_retries:
+        while retry_count < self.max_retries:
             try:
                 self.last_request_time = time.time()
                 
@@ -130,26 +141,26 @@ class SmartleadAdapter:
                 
             except requests.exceptions.Timeout:
                 retry_count += 1
-                wait_time = 2 ** retry_count  # exponential backoff: 2s, 4s, 8s
-                logger.warning(f"Request timeout (attempt {retry_count}/{max_retries}). Retrying in {wait_time}s...")
+                wait_time = 2 ** retry_count  # exponential backoff: 2s, 4s, 8s, 16s, 32s
+                logger.warning(f"Request timeout (attempt {retry_count}/{self.max_retries}). Retrying in {wait_time}s...")
                 self.last_request_error = {
                     "type": "timeout",
-                    "message": f"Request timeout (attempt {retry_count}/{max_retries})",
+                    "message": f"Request timeout (attempt {retry_count}/{self.max_retries})",
                 }
-                if retry_count < max_retries:
+                if retry_count < self.max_retries:
                     time.sleep(wait_time)
                     
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 429:  # Rate limited
                     retry_count += 1
                     wait_time = 2 ** retry_count
-                    logger.warning(f"Rate limited (attempt {retry_count}/{max_retries}). Retrying in {wait_time}s...")
+                    logger.warning(f"Rate limited (attempt {retry_count}/{self.max_retries}). Retrying in {wait_time}s...")
                     self.last_request_error = {
                         "type": "rate_limit",
                         "status_code": 429,
                         "message": str(e),
                     }
-                    if retry_count < max_retries:
+                    if retry_count < self.max_retries:
                         time.sleep(wait_time)
                 else:
                     logger.error(f"HTTP error: {e}")
@@ -168,11 +179,11 @@ class SmartleadAdapter:
                 }
                 return None
         
-        logger.error(f"Failed after {max_retries} retries")
+        logger.error(f"Failed after {self.max_retries} retries")
         if not self.last_request_error:
             self.last_request_error = {
                 "type": "retry_exhausted",
-                "message": f"Failed after {max_retries} retries",
+                "message": f"Failed after {self.max_retries} retries",
             }
         return None
 
@@ -197,32 +208,27 @@ class SmartleadAdapter:
         domain: Optional[str] = None,
         company_name: Optional[str] = None,
         limit: int = 30,
-        levels: Optional[List[str]] = None,
+        levels: Optional[List[str]] = None
     ) -> Optional[Dict[str, Any]]:
         """
-        Search contacts with priority: companyDomain first, then companyName fallback.
+        Search contacts using company domain only.
         """
         normalized_domain = self._normalize_domain(domain)
-        clean_name = (company_name or "").strip()
-        if not normalized_domain and not clean_name:
-            logger.error("search_contacts requires either domain or company_name")
+        if not normalized_domain:
+            logger.error("search_contacts requires a valid domain")
             return None
 
         payload: Dict[str, Any] = {
             "limit": limit,
             "level": levels or self.default_levels,
+            "department": self.department_filters,
+            "companyDomain": [normalized_domain],
         }
-        lookup_method = "domain"
-        if normalized_domain:
-            payload["companyDomain"] = [normalized_domain]
-        else:
-            payload["companyName"] = [clean_name]
-            lookup_method = "company_name"
 
         endpoint = f"{self.search_contacts_path}?api_key={self.api_key}"
         response = self._make_request(endpoint, method="POST", payload=payload)
         if response and response.get("success"):
-            response["lookup_method"] = lookup_method
+            response["lookup_method"] = "domain"
             return response
         return None
 
@@ -260,8 +266,8 @@ class SmartleadAdapter:
         Perform full enrichment (both company data and key persons) in one call.
         
         Args:
-            company_name: Company name (optional)
-            domain: Company domain (required, if company_name not provided)
+            company_name: Company name (optional, used for metadata only)
+            domain: Company domain used for contact search
             location: Company location (optional)
             
         Returns:
@@ -270,15 +276,9 @@ class SmartleadAdapter:
         normalized_domain = self._normalize_domain(domain)
         clean_name = (company_name or "").strip()
 
-        # 1) Domain-first search
+        # Domain-only search
         search_response = self.search_contacts(domain=normalized_domain, company_name=None)
         lookup_method = "domain"
-
-        # 2) Fallback to company name if domain missing/no-results
-        no_results = not search_response or not (search_response.get("data", {}).get("list") or [])
-        if no_results and clean_name:
-            search_response = self.search_contacts(domain=None, company_name=clean_name)
-            lookup_method = "company_name"
 
         if not search_response or not search_response.get("success"):
             return None

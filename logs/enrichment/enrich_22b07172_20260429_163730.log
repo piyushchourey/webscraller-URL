@@ -1,0 +1,37 @@
+C:\Users\MindRuby\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.4.0.post2)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+2026-04-29 16:37:32,280 - __main__ - INFO - Database: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+
+2026-04-29 16:37:32,366 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-29 16:37:32,375 - __main__ - INFO - ======================================================================
+2026-04-29 16:37:32,375 - __main__ - INFO - Starting enrichment for Job: Test department filter
+2026-04-29 16:37:32,375 - __main__ - INFO - Job ID: 22b07172-d52f-42cc-81e3-ce1a72fbd60b
+2026-04-29 16:37:32,375 - __main__ - INFO - Status: completed
+2026-04-29 16:37:32,375 - __main__ - INFO - Dry Run: False
+2026-04-29 16:37:32,375 - __main__ - INFO - Company Filter Hook: False
+2026-04-29 16:37:32,375 - __main__ - INFO - ======================================================================
+2026-04-29 16:37:32,378 - __main__ - INFO - Enrichment Status: 2 pending, 0 processing, 0 enriched, 0 failed out of 2 total
+2026-04-29 16:37:32,380 - scraper.enrichment.manager - INFO - Found 2 pending companies for job 22b07172-d52f-42cc-81e3-ce1a72fbd60b
+2026-04-29 16:37:32,380 - __main__ - INFO - 
+Processing 2 pending companies...
+
+2026-04-29 16:37:32,380 - __main__ - INFO - [1/2] Processing: ANZ
+2026-04-29 16:37:32,383 - scraper.enrichment.manager - INFO - Marked company 925 as processing enrichment
+2026-04-29 16:37:34,033 - scraper.enrichment.manager - WARNING - Failed to enrich company 925: Smartlead API returned no data
+2026-04-29 16:37:34,036 - __main__ - WARNING -   \u26a0\ufe0f  Smartlead API returned no data
+2026-04-29 16:37:34,036 - __main__ - INFO - [2/2] Processing: Angle Auto Finance
+2026-04-29 16:37:34,038 - scraper.enrichment.manager - INFO - Marked company 926 as processing enrichment
+2026-04-29 16:37:47,025 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-29 16:37:59,311 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-29 16:38:13,542 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 3/3). Retrying in 8s...
+2026-04-29 16:38:13,542 - scraper.enrichment.smartlead_adapter - ERROR - Failed after 3 retries
+2026-04-29 16:38:13,544 - scraper.enrichment.manager - INFO - Successfully enriched company 926
+2026-04-29 16:38:13,548 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-29 16:38:13,548 - __main__ - INFO - 
+======================================================================
+2026-04-29 16:38:13,548 - __main__ - INFO - Enrichment Complete for Job: Test department filter
+2026-04-29 16:38:13,548 - __main__ - INFO - \u2705 Successfully enriched: 1
+2026-04-29 16:38:13,548 - __main__ - INFO - \u274c Failed: 1
+2026-04-29 16:38:13,548 - __main__ - INFO - ======================================================================
+2026-04-29 16:38:13,548 - __main__ - INFO - 
+Tip: Run with --retry-failed to retry failed enrichments

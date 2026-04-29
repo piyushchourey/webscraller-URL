@@ -99,6 +99,7 @@ class EnrichedCompanyData:
     processing_status: str = "pending"
     error_message: Optional[str] = None
     confidence_score: float = 0.0
+    extra_data: Optional[Dict[str, Any]] = None
 
     @property
     def platform_products(self) -> List[str]:

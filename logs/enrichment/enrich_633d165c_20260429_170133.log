@@ -1,0 +1,34 @@
+C:\Users\MindRuby\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.4.0.post2)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+2026-04-29 17:01:34,857 - __main__ - INFO - Database: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+
+2026-04-29 17:01:34,931 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-29 17:01:34,940 - __main__ - INFO - ======================================================================
+2026-04-29 17:01:34,940 - __main__ - INFO - Starting enrichment for Job: Test 2 Find Email API timeout issue
+2026-04-29 17:01:34,941 - __main__ - INFO - Job ID: 633d165c-f130-4e7c-9301-d1be4e33bd2c
+2026-04-29 17:01:34,941 - __main__ - INFO - Status: completed
+2026-04-29 17:01:34,941 - __main__ - INFO - Dry Run: False
+2026-04-29 17:01:34,941 - __main__ - INFO - Company Filter Hook: False
+2026-04-29 17:01:34,941 - __main__ - INFO - ======================================================================
+2026-04-29 17:01:34,943 - __main__ - INFO - Enrichment Status: 2 pending, 0 processing, 0 enriched, 0 failed out of 2 total
+2026-04-29 17:01:34,946 - scraper.enrichment.manager - INFO - Found 2 pending companies for job 633d165c-f130-4e7c-9301-d1be4e33bd2c
+2026-04-29 17:01:34,946 - __main__ - INFO - 
+Processing 2 pending companies...
+
+2026-04-29 17:01:34,946 - __main__ - INFO - [1/2] Processing: ANZ
+2026-04-29 17:01:34,948 - scraper.enrichment.manager - INFO - Marked company 927 as processing enrichment
+2026-04-29 17:01:36,591 - scraper.enrichment.manager - WARNING - Failed to enrich company 927: Smartlead API returned no data
+2026-04-29 17:01:36,594 - __main__ - WARNING -   \u26a0\ufe0f  Smartlead API returned no data
+2026-04-29 17:01:36,594 - __main__ - INFO - [2/2] Processing: Angle Auto Finance
+2026-04-29 17:01:36,597 - scraper.enrichment.manager - INFO - Marked company 928 as processing enrichment
+2026-04-29 17:02:25,858 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/5). Retrying in 2s...
+2026-04-29 17:02:33,136 - scraper.enrichment.manager - INFO - Successfully enriched company 928
+2026-04-29 17:02:33,145 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-29 17:02:33,145 - __main__ - INFO - 
+======================================================================
+2026-04-29 17:02:33,145 - __main__ - INFO - Enrichment Complete for Job: Test 2 Find Email API timeout issue
+2026-04-29 17:02:33,145 - __main__ - INFO - \u2705 Successfully enriched: 1
+2026-04-29 17:02:33,145 - __main__ - INFO - \u274c Failed: 1
+2026-04-29 17:02:33,145 - __main__ - INFO - ======================================================================
+2026-04-29 17:02:33,145 - __main__ - INFO - 
+Tip: Run with --retry-failed to retry failed enrichments

@@ -200,6 +200,16 @@ class ExcelProcessor:
                         row_metadata['platform_products'] = parsed_products
                         row_metadata['salesforce_products'] = parsed_products
 
+                # Capture any extra columns not already mapped
+                known_cols = {"URL", "Segmentation", "Company_Size", "Company Size",
+                              "Platform_Products", "Platform Products",
+                              "Salesforce_Products", "Salesforce Products"}
+                row_metadata["extra_data"] = {
+                    col: (str(row[col]) if pd.notna(row[col]) else "")
+                    for col in df.columns
+                    if col not in known_cols
+                }
+
                 rows.append(row_metadata)
 
             return ExcelProcessor.deduplicate_rows(rows)
@@ -305,6 +315,19 @@ class ExcelProcessor:
                             if item and item.strip()
                         ]
 
+                # Capture any extra columns not already mapped
+                known_cols = {
+                    col for col in [
+                        company_name_col, company_url_col, segmentation_col,
+                        company_size_col, industry_col, location_col, products_col,
+                    ] if col is not None
+                }
+                extra_data = {
+                    col: (str(row[col]) if pd.notna(row[col]) else "")
+                    for col in df.columns
+                    if col not in known_cols
+                }
+
                 rows.append(
                     {
                         "url": company_url,
@@ -316,6 +339,7 @@ class ExcelProcessor:
                         "company_size": company_size,
                         "platform_products": platform_products,
                         "salesforce_products": platform_products,
+                        "extra_data": extra_data,
                     }
                 )
 
@@ -475,7 +499,8 @@ class BatchProcessor:
                     raw_scraped_text=scraped_data.main_text,
                     ai_analysis=ai_result.response_text,
                     processing_status="completed",
-                    confidence_score=float(data.get('confidence_score', 0.5))
+                    confidence_score=float(data.get('confidence_score', 0.5)),
+                    extra_data=row_metadata.get('extra_data') or None,
                 )
             else:
                 # Fallback: create basic enriched data
@@ -488,7 +513,8 @@ class BatchProcessor:
                     ai_analysis=ai_result.response_text,
                     processing_status="completed",
                     error_message="Could not parse structured data from AI response",
-                    confidence_score=0.3
+                    confidence_score=0.3,
+                    extra_data=row_metadata.get('extra_data') or None,
                 )
 
         except json.JSONDecodeError:
@@ -501,7 +527,8 @@ class BatchProcessor:
                 ai_analysis=ai_result.response_text,
                 processing_status="completed",
                 error_message="Invalid JSON in AI response",
-                confidence_score=0.2
+                confidence_score=0.2,
+                extra_data=row_metadata.get('extra_data') or None,
             )
 
     def profile_company_from_input(self, row_metadata: Dict[str, Any]) -> EnrichedCompanyData:
@@ -555,6 +582,7 @@ class BatchProcessor:
                 processing_status="completed",
                 error_message=None,
                 confidence_score=float(parsed.get("confidence_score", 0.6) or 0.6),
+                extra_data=row_metadata.get("extra_data") or None,
             )
 
         except Exception as exc:
@@ -575,6 +603,7 @@ class BatchProcessor:
                 processing_status="completed",
                 error_message=f"LLM profiling fallback: {exc}",
                 confidence_score=0.2,
+                extra_data=row_metadata.get("extra_data") or None,
             )
 
     def process_batch(self, batch_urls: List[Dict[str, Any]], batch_number: int) -> List[ProcessingTask]:
@@ -1070,6 +1099,7 @@ def _process_direct_task_with_db(
             processing_status="completed",
             error_message=None,
             confidence_score=0.0,
+            extra_data=row_metadata.get("extra_data") or None,
         )
 
         db.save_company_data(db_task.task_id, enriched_data)

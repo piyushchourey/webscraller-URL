@@ -130,6 +130,8 @@ class CompanyData(Base):
     processing_status = Column(Text, default="pending")
     error_message = Column(Text, nullable=True)
     
+    extra_data = Column(JSON, nullable=True)  # All extra Excel columns preserved as JSON
+
     # Smartlead enrichment fields
     smartlead_enrichment = Column(JSON, nullable=True)  # Full Smartlead API response
     enrichment_status = Column(Text, default="pending")  # pending/processing/enriched/failed

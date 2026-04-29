@@ -56,16 +56,27 @@ class DatabaseManager:
         if not inspector.has_table("processing_jobs"):
             return
 
-        column_names = {col["name"] for col in inspector.get_columns("processing_jobs")}
-        if "job_name" in column_names:
-            return
-
         dialect_name = self.engine.dialect.name
-        with self.engine.begin() as connection:
-            if dialect_name == "postgresql":
-                connection.execute(text("ALTER TABLE processing_jobs ADD COLUMN IF NOT EXISTS job_name TEXT"))
-            elif dialect_name == "sqlite":
-                connection.execute(text("ALTER TABLE processing_jobs ADD COLUMN job_name TEXT"))
+
+        # Patch processing_jobs.job_name
+        column_names = {col["name"] for col in inspector.get_columns("processing_jobs")}
+        if "job_name" not in column_names:
+            with self.engine.begin() as connection:
+                if dialect_name == "postgresql":
+                    connection.execute(text("ALTER TABLE processing_jobs ADD COLUMN IF NOT EXISTS job_name TEXT"))
+                elif dialect_name == "sqlite":
+                    connection.execute(text("ALTER TABLE processing_jobs ADD COLUMN job_name TEXT"))
+
+        # Patch company_data.extra_data
+        if inspector.has_table("company_data"):
+            cd_columns = {col["name"] for col in inspector.get_columns("company_data")}
+            if "extra_data" not in cd_columns:
+                with self.engine.begin() as connection:
+                    if dialect_name == "postgresql":
+                        connection.execute(text("ALTER TABLE company_data ADD COLUMN IF NOT EXISTS extra_data JSONB"))
+                    elif dialect_name == "sqlite":
+                        connection.execute(text("ALTER TABLE company_data ADD COLUMN extra_data JSON"))
+                logger.info("Added extra_data column to company_data")
 
         if dialect_name == "postgresql":
             self._sync_postgres_sequence("company_data", "company_id")
@@ -419,6 +430,7 @@ class DatabaseManager:
                 confidence_score=data.confidence_score,
                 processing_status=resolved_status,
                 error_message=data.error_message,
+                extra_data=data.extra_data if hasattr(data, "extra_data") else None,
             )
             session.add(company)
             session.flush()
@@ -526,6 +538,7 @@ class DatabaseManager:
                     "smartlead_enrichment": company.smartlead_enrichment,
                     "enrichment_updated_at": company.enrichment_updated_at,
                     "enrichment_last_error": company.enrichment_last_error,
+                    "extra_data": company.extra_data or {},
                 }
                 results.append(company_dict)
 
