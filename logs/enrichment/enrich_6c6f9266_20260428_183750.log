@@ -1,0 +1,45 @@
+C:\Users\MindRuby\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.4.0.post2)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+2026-04-28 18:37:52,279 - __main__ - INFO - Database: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+
+2026-04-28 18:37:52,279 - __main__ - INFO - Resetting failed enrichments for retry...
+
+2026-04-28 18:37:52,472 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-28 18:37:52,482 - scraper.enrichment.manager - INFO - Reset 0 failed enrichments for job 6c6f9266-2fc8-4fea-90c6-997299ee49c2
+2026-04-28 18:37:52,483 - __main__ - INFO - Reset 0 failed enrichments
+
+2026-04-28 18:37:52,517 - scraper.database.manager - INFO - Database initialized: postgresql+psycopg2://postgres:admin@localhost:5432/LeadsEnrichment
+2026-04-28 18:37:52,519 - __main__ - INFO - ======================================================================
+2026-04-28 18:37:52,519 - __main__ - INFO - Starting enrichment for Job: Test 2 direct input
+2026-04-28 18:37:52,519 - __main__ - INFO - Job ID: 6c6f9266-2fc8-4fea-90c6-997299ee49c2
+2026-04-28 18:37:52,519 - __main__ - INFO - Status: completed
+2026-04-28 18:37:52,519 - __main__ - INFO - Dry Run: False
+2026-04-28 18:37:52,519 - __main__ - INFO - Company Filter Hook: True
+2026-04-28 18:37:52,519 - __main__ - INFO - ======================================================================
+2026-04-28 18:37:52,522 - __main__ - INFO - Enrichment Status: 2 pending, 0 processing, 0 enriched, 0 failed out of 2 total
+2026-04-28 18:37:52,523 - scraper.enrichment.manager - INFO - Found 2 pending companies for job 6c6f9266-2fc8-4fea-90c6-997299ee49c2
+2026-04-28 18:37:52,523 - __main__ - INFO - 
+Processing 2 pending companies...
+
+2026-04-28 18:37:52,523 - __main__ - INFO - [1/2] Processing: Alerus Financial, NA
+2026-04-28 18:37:52,526 - scraper.enrichment.manager - INFO - Marked company 766 as processing enrichment
+2026-04-28 18:38:04,652 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-28 18:38:16,925 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-28 18:38:37,334 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-28 18:38:49,585 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-28 18:39:09,203 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 1/3). Retrying in 2s...
+2026-04-28 18:39:21,473 - scraper.enrichment.smartlead_adapter - WARNING - Request timeout (attempt 2/3). Retrying in 4s...
+2026-04-28 18:39:30,162 - scraper.enrichment.manager - INFO - Successfully enriched company 766
+2026-04-28 18:39:30,173 - __main__ - INFO -   \u2705 Successfully enriched
+2026-04-28 18:39:30,173 - __main__ - INFO - [2/2] Processing: Alliance Equipment Finance, LLC
+2026-04-28 18:39:30,175 - scraper.enrichment.manager - INFO - Marked company 767 as processing enrichment
+2026-04-28 18:39:33,596 - scraper.enrichment.manager - WARNING - Failed to enrich company 767: Smartlead API returned no data
+2026-04-28 18:39:33,601 - __main__ - WARNING -   \u26a0\ufe0f  Smartlead API returned no data
+2026-04-28 18:39:33,601 - __main__ - INFO - 
+======================================================================
+2026-04-28 18:39:33,601 - __main__ - INFO - Enrichment Complete for Job: Test 2 direct input
+2026-04-28 18:39:33,601 - __main__ - INFO - \u2705 Successfully enriched: 1
+2026-04-28 18:39:33,601 - __main__ - INFO - \u274c Failed: 1
+2026-04-28 18:39:33,601 - __main__ - INFO - ======================================================================
+2026-04-28 18:39:33,601 - __main__ - INFO - 
+Tip: Run with --retry-failed to retry failed enrichments

@@ -63,6 +63,10 @@ def _build_enrichment_tables(job_results: list[dict[str, Any]]) -> tuple[list[di
         stats = enrichment_data.get("stats") or {}
         contacts_enriched = enrichment_data.get("contacts_enriched", []) or []
         search_contacts = ((enrichment_data.get("search_contacts") or {}).get("data") or {}).get("list") or []
+        filter_eval = enrichment_data.get("filter_evaluation") or {}
+        evaluated_fields = filter_eval.get("evaluated_fields") or {}
+        exclusion_reasons = enrichment_data.get("exclusion_reasons") or []
+        exclusion_rule_ids = enrichment_data.get("rule_ids") or []
 
         smartlead_headcount = (
             _first_non_empty(contacts_enriched, "companyHeadCount")
@@ -85,6 +89,16 @@ def _build_enrichment_tables(job_results: list[dict[str, Any]]) -> tuple[list[di
                 "Enrichment_Status": row.get("enrichment_status") or "pending",
                 "Contacts_Found": stats.get("contacts_found", 0),
                 "Valid_Emails": stats.get("valid_emails_found", 0),
+                "Find_Emails_Skipped": bool(enrichment_data.get("find_emails_skipped", False)),
+                "Exclusion_Applied": bool(enrichment_data.get("exclusion_applied", False)),
+                "Exclusion_Rule_IDs": ", ".join(str(x) for x in exclusion_rule_ids if str(x).strip()),
+                "Exclusion_Reasons": " | ".join(str(x) for x in exclusion_reasons if str(x).strip()),
+                "Headcount_Observed": (
+                    enrichment_data.get("headcount_observed")
+                    or evaluated_fields.get("headcount_raw")
+                    or smartlead_headcount
+                    or ""
+                ),
                 "Last_Error": row.get("enrichment_last_error") or "",
             }
         )
@@ -395,6 +409,46 @@ with tab1:
                     help="Re-run companies marked as failed.",
                 )
 
+            st.markdown("**Company Filter Hook (before find-emails)**")
+            hook_col1, hook_col2 = st.columns(2)
+            with hook_col1:
+                company_filter_hook_enabled = st.checkbox(
+                    "Enable company exclusion filters",
+                    value=True,
+                    help="Skip find-emails for companies matching exclusion rules.",
+                )
+            with hook_col2:
+                st.caption("Default rules: exclude >2000 and <15 employees")
+
+            threshold_col1, threshold_col2 = st.columns(2)
+            with threshold_col1:
+                company_min_employees = st.number_input(
+                    "Min employees (exclude below)",
+                    min_value=0,
+                    value=15,
+                    step=1,
+                    help="Companies below this size are excluded from find-emails.",
+                )
+            with threshold_col2:
+                company_max_employees = st.number_input(
+                    "Max employees (exclude above)",
+                    min_value=0,
+                    value=2000,
+                    step=1,
+                    help="Companies above this size are excluded from find-emails.",
+                )
+
+            excluded_industries = st.text_input(
+                "Excluded industries (comma-separated)",
+                value="",
+                help="Example: Government, Defense, Gambling",
+            )
+            excluded_locations = st.text_input(
+                "Excluded locations (comma-separated)",
+                value="",
+                help="Example: Russia, North Korea",
+            )
+
         st.divider()
         
         # Action buttons
@@ -447,6 +501,11 @@ with tab1:
                     "rate_limit": rate_limit,
                     "dry_run": dry_run,
                     "retry_failed": retry_failed,
+                    "company_filter_hook_enabled": company_filter_hook_enabled,
+                    "company_min_employees": int(company_min_employees),
+                    "company_max_employees": int(company_max_employees),
+                    "excluded_industries": excluded_industries,
+                    "excluded_locations": excluded_locations,
                 }
                 
                 # Store in session state
@@ -474,7 +533,16 @@ with tab1:
                     selected_job_id,
                     "--api-key", api_key,
                     "--rate-limit", str(rate_limit),
+                    "--company-filter-hook", "on" if company_filter_hook_enabled else "off",
+                    "--company-min-employees", str(int(company_min_employees)),
+                    "--company-max-employees", str(int(company_max_employees)),
                 ]
+
+                if excluded_industries.strip():
+                    cmd.extend(["--excluded-industries", excluded_industries.strip()])
+
+                if excluded_locations.strip():
+                    cmd.extend(["--excluded-locations", excluded_locations.strip()])
                 
                 if dry_run:
                     cmd.append("--dry-run")
@@ -653,6 +721,11 @@ with tab2:
         if company_rows:
             st.markdown("**Company-Level Output**")
             st.dataframe(company_rows, use_container_width=True, hide_index=True)
+            skipped_count = sum(1 for company_row in company_rows if company_row.get("Find_Emails_Skipped"))
+            if skipped_count:
+                st.caption(
+                    f"Filter hook summary: find-emails skipped for {skipped_count}/{len(company_rows)} companies based on exclusion rules."
+                )
         else:
             st.info("No company output available for this job yet.")
 
@@ -723,6 +796,11 @@ with tab3:
                 st.markdown("**Company-Level Output**")
                 if company_rows:
                     st.dataframe(company_rows, use_container_width=True, hide_index=True)
+                    skipped_count = sum(1 for company_row in company_rows if company_row.get("Find_Emails_Skipped"))
+                    if skipped_count:
+                        st.caption(
+                            f"Filter hook summary: find-emails skipped for {skipped_count}/{len(company_rows)} companies based on exclusion rules."
+                        )
                 else:
                     st.caption("No company-level enrichment output recorded.")
 

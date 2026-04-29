@@ -61,12 +61,23 @@ def format_smartlead_error(last_request_error: Optional[dict[str, Any]]) -> str:
     return f"Smartlead {error_type} error: {message or 'No details'}"
 
 
+def _parse_csv(value: Optional[str]) -> list[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item and item.strip()]
+
+
 def enrich_job(
     job_id: str,
     api_key: str,
     rate_limit: int = 60,
     max_retries: int = 3,
     dry_run: bool = False,
+    company_filter_hook_enabled: Optional[bool] = None,
+    company_filter_min_employees: Optional[int] = None,
+    company_filter_max_employees: Optional[int] = None,
+    excluded_industries: Optional[list[str]] = None,
+    excluded_locations: Optional[list[str]] = None,
 ) -> bool:
     """
     Enrich all pending companies for a specific job.
@@ -77,6 +88,11 @@ def enrich_job(
         rate_limit: API calls per minute
         max_retries: Maximum retry attempts for failed enrichments
         dry_run: If True, only show what would be enriched without making API calls
+        company_filter_hook_enabled: Optional hook toggle for pre-find-emails filtering
+        company_filter_min_employees: Optional minimum employee threshold
+        company_filter_max_employees: Optional maximum employee threshold
+        excluded_industries: Optional list of industry exclusion keywords
+        excluded_locations: Optional list of location exclusion keywords
         
     Returns:
         True if successful, False otherwise
@@ -85,7 +101,15 @@ def enrich_job(
         # Initialize managers
         db = DatabaseManager()
         enrichment_mgr = EnrichmentManager(db)
-        smartlead = SmartleadAdapter(api_key, rate_limit_per_minute=rate_limit)
+        smartlead = SmartleadAdapter(
+            api_key,
+            rate_limit_per_minute=rate_limit,
+            company_filter_hook_enabled=company_filter_hook_enabled,
+            company_filter_min_employees=company_filter_min_employees,
+            company_filter_max_employees=company_filter_max_employees,
+            excluded_industries=excluded_industries,
+            excluded_locations=excluded_locations,
+        )
         
         # Get job info
         job_info = enrichment_mgr.get_job_info(job_id)
@@ -98,6 +122,7 @@ def enrich_job(
         logger.info(f"Job ID: {job_id}")
         logger.info(f"Status: {job_info['status']}")
         logger.info(f"Dry Run: {dry_run}")
+        logger.info(f"Company Filter Hook: {smartlead.company_filter_hook_enabled}")
         logger.info("=" * 70)
         
         # Get enrichment stats
@@ -227,6 +252,34 @@ def main():
         action="store_true",
         help="Reset failed enrichments to pending for retry",
     )
+    parser.add_argument(
+        "--company-filter-hook",
+        choices=["on", "off"],
+        default=None,
+        help="Enable/disable pre-find-emails company filter hook.",
+    )
+    parser.add_argument(
+        "--company-min-employees",
+        type=int,
+        default=None,
+        help="Exclude companies with fewer than this many employees.",
+    )
+    parser.add_argument(
+        "--company-max-employees",
+        type=int,
+        default=None,
+        help="Exclude companies with more than this many employees.",
+    )
+    parser.add_argument(
+        "--excluded-industries",
+        default=None,
+        help="Comma-separated industry keywords to exclude.",
+    )
+    parser.add_argument(
+        "--excluded-locations",
+        default=None,
+        help="Comma-separated location keywords to exclude.",
+    )
     
     args = parser.parse_args()
     
@@ -253,6 +306,13 @@ def main():
         args.api_key,
         rate_limit=args.rate_limit,
         dry_run=args.dry_run,
+        company_filter_hook_enabled=(
+            None if args.company_filter_hook is None else args.company_filter_hook == "on"
+        ),
+        company_filter_min_employees=args.company_min_employees,
+        company_filter_max_employees=args.company_max_employees,
+        excluded_industries=_parse_csv(args.excluded_industries),
+        excluded_locations=_parse_csv(args.excluded_locations),
     )
     
     sys.exit(0 if success else 1)

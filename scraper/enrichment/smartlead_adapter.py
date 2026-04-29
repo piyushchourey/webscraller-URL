@@ -8,19 +8,40 @@ from datetime import datetime
 
 import requests
 
+from scraper.enrichment.company_filters import (
+    CompanyFilterConfig,
+    build_filter_engine,
+    extract_company_filter_context,
+)
+
 logger = logging.getLogger(__name__)
 
 
 class SmartleadAdapter:
     """Adapter for Smartlead API integration."""
 
-    def __init__(self, api_key: str, rate_limit_per_minute: int = 60):
+    def __init__(
+        self,
+        api_key: str,
+        rate_limit_per_minute: int = 60,
+        company_filter_hook_enabled: Optional[bool] = None,
+        company_filter_min_employees: Optional[int] = None,
+        company_filter_max_employees: Optional[int] = None,
+        excluded_industries: Optional[List[str]] = None,
+        excluded_locations: Optional[List[str]] = None,
+    ):
         """
         Initialize Smartlead adapter.
         
         Args:
             api_key: Smartlead API key
             rate_limit_per_minute: API calls per minute to respect rate limits
+            company_filter_hook_enabled: Optional override to enable/disable
+                pre-find-emails exclusion hook.
+            company_filter_min_employees: Optional override for min size exclusion.
+            company_filter_max_employees: Optional override for max size exclusion.
+            excluded_industries: Optional industry keyword exclusions.
+            excluded_locations: Optional location keyword exclusions.
         """
         self.api_key = api_key
         self.base_url = "https://prospect-api.smartlead.ai"
@@ -32,6 +53,21 @@ class SmartleadAdapter:
         self.min_delay_between_requests = 60.0 / rate_limit_per_minute
         self.last_request_time = 0
         self.last_request_error: Optional[Dict[str, Any]] = None
+        filter_config = CompanyFilterConfig.from_env()
+        if company_filter_min_employees is not None:
+            filter_config.min_employees = int(company_filter_min_employees)
+        if company_filter_max_employees is not None:
+            filter_config.max_employees = int(company_filter_max_employees)
+        if excluded_industries is not None:
+            filter_config.industry_exclusions = excluded_industries
+        if excluded_locations is not None:
+            filter_config.location_exclusions = excluded_locations
+        self.company_filter_engine = build_filter_engine(filter_config)
+        self.company_filter_hook_enabled = (
+            self.company_filter_engine.enabled
+            if company_filter_hook_enabled is None
+            else bool(company_filter_hook_enabled)
+        )
 
     def _wait_for_rate_limit(self):
         """Ensure rate limiting between API requests."""
@@ -251,6 +287,14 @@ class SmartleadAdapter:
         if not contacts:
             return None
 
+        filter_context = extract_company_filter_context(
+            contacts=contacts,
+            company_location=location,
+            company_industry="",
+        )
+        filter_decision = self.company_filter_engine.evaluate(filter_context)
+        exclusion_applied = self.company_filter_hook_enabled and filter_decision.excluded
+
         # Build input for find-emails endpoint.
         email_contacts: List[Dict[str, str]] = []
         for contact in contacts:
@@ -269,8 +313,17 @@ class SmartleadAdapter:
                     }
                 )
 
-        find_emails_response = self.find_emails(email_contacts) if email_contacts else None
-        if email_contacts and not find_emails_response:
+        find_emails_response = None
+        if exclusion_applied:
+            logger.info(
+                "Skipping find_emails for %s due to exclusion rules: %s",
+                clean_name or normalized_domain or "unknown_company",
+                "; ".join(filter_decision.reasons),
+            )
+        elif email_contacts:
+            find_emails_response = self.find_emails(email_contacts)
+
+        if email_contacts and not exclusion_applied and not find_emails_response:
             error_type = (self.last_request_error or {}).get("type")
             if error_type in {"http", "rate_limit"}:
                 logger.warning(
@@ -314,12 +367,18 @@ class SmartleadAdapter:
                 "company_domain": normalized_domain,
                 "location": location,
             },
+            "exclusion_applied": exclusion_applied,
+            "exclusion_reasons": filter_decision.reasons if exclusion_applied else [],
+            "rule_ids": filter_decision.rule_ids if exclusion_applied else [],
+            "headcount_observed": filter_context.get("headcount_raw") or "",
+            "filter_evaluation": filter_decision.as_dict(),
+            "find_emails_skipped": exclusion_applied,
             "search_contacts": search_response,
             "find_emails": find_emails_response,
             "contacts_enriched": contacts_with_email,
             "stats": {
                 "contacts_found": len(contacts),
-                "email_requested": len(email_contacts),
+                "email_requested": 0 if exclusion_applied else len(email_contacts),
                 "valid_emails_found": valid_email_count,
             },
             "enriched_at": datetime.utcnow().isoformat(),
