@@ -261,6 +261,7 @@ class SmartleadAdapter:
         company_name: Optional[str] = None,
         domain: Optional[str] = None,
         location: Optional[str] = None,
+        db=None,
     ) -> Optional[Dict[str, Any]]:
         """
         Perform full enrichment (both company data and key persons) in one call.
@@ -295,7 +296,33 @@ class SmartleadAdapter:
         filter_decision = self.company_filter_engine.evaluate(filter_context)
         exclusion_applied = self.company_filter_hook_enabled and filter_decision.excluded
 
-        # Build input for find-emails endpoint.
+        # Check DB cache for existing emails before calling find-emails API
+        cached_email_map: Dict[tuple, Dict[str, Any]] = {}
+        if db is not None and normalized_domain:
+            logger.info(
+                "[EMAIL CACHE] Checking DB for existing emails | company=%s | domain=%s | contacts_to_check=%d",
+                clean_name or normalized_domain, normalized_domain, len(contacts),
+            )
+            cached_email_map = db.get_cached_emails_by_domain(normalized_domain)
+            if cached_email_map:
+                logger.info(
+                    "[EMAIL CACHE] HIT | domain=%s | cached_contacts=%d | persons=%s",
+                    normalized_domain,
+                    len(cached_email_map),
+                    [f"{k[0]} {k[1]}" for k in cached_email_map.keys()],
+                )
+            else:
+                logger.info(
+                    "[EMAIL CACHE] MISS | domain=%s | no existing emails found in DB",
+                    normalized_domain,
+                )
+        else:
+            logger.info(
+                "[EMAIL CACHE] Skipped DB check | company=%s | domain=%s | db_available=%s",
+                clean_name or normalized_domain, normalized_domain, db is not None,
+            )
+
+        # Build find-emails input — only for contacts NOT already in cache
         email_contacts: List[Dict[str, str]] = []
         for contact in contacts:
             first_name = (contact.get("firstName") or "").strip()
@@ -304,7 +331,11 @@ class SmartleadAdapter:
                 (contact.get("company") or {}).get("website")
             ) or normalized_domain
 
-            if first_name and last_name and contact_company_domain:
+            if not first_name or not last_name or not contact_company_domain:
+                continue
+
+            key = (first_name.lower(), last_name.lower(), contact_company_domain)
+            if key not in cached_email_map:
                 email_contacts.append(
                     {
                         "firstName": first_name,
@@ -313,15 +344,40 @@ class SmartleadAdapter:
                     }
                 )
 
+        cache_hits = len(cached_email_map)
+        logger.info(
+            "[EMAIL CACHE] Split result | domain=%s | from_cache=%d | needs_api=%d",
+            normalized_domain, cache_hits, len(email_contacts),
+        )
+
         find_emails_response = None
         if exclusion_applied:
             logger.info(
-                "Skipping find_emails for %s due to exclusion rules: %s",
+                "[SMARTLEAD API] SKIPPED find_emails | company=%s | domain=%s | reason=exclusion_rules | rules=%s",
                 clean_name or normalized_domain or "unknown_company",
+                normalized_domain,
                 "; ".join(filter_decision.reasons),
             )
         elif email_contacts:
+            logger.info(
+                "[SMARTLEAD API] Calling find_emails | company=%s | domain=%s | contacts=%d | persons=%s",
+                clean_name or normalized_domain,
+                normalized_domain,
+                len(email_contacts),
+                [f"{c['firstName']} {c['lastName']}" for c in email_contacts],
+            )
             find_emails_response = self.find_emails(email_contacts)
+            logger.info(
+                "[SMARTLEAD API] find_emails response | domain=%s | success=%s | emails_returned=%d",
+                normalized_domain,
+                bool(find_emails_response and find_emails_response.get("success")),
+                len((find_emails_response or {}).get("data") or []),
+            )
+        else:
+            logger.info(
+                "[SMARTLEAD API] find_emails not needed | domain=%s | all %d contact(s) served from cache",
+                normalized_domain, cache_hits,
+            )
 
         if email_contacts and not exclusion_applied and not find_emails_response:
             error_type = (self.last_request_error or {}).get("type")
@@ -331,7 +387,8 @@ class SmartleadAdapter:
                 )
                 return None
 
-        email_map: Dict[tuple, Dict[str, Any]] = {}
+        # Seed email_map from DB cache first, then overlay fresh API results
+        email_map: Dict[tuple, Dict[str, Any]] = dict(cached_email_map)
         if find_emails_response and find_emails_response.get("success"):
             for row in find_emails_response.get("data") or []:
                 key = (
@@ -360,6 +417,16 @@ class SmartleadAdapter:
 
             contacts_with_email.append(enriched_contact)
 
+        logger.info(
+            "[ENRICHMENT SUMMARY] company=%s | domain=%s | total_contacts=%d | cache_hits=%d | api_calls=%d | valid_emails=%d",
+            clean_name or normalized_domain,
+            normalized_domain,
+            len(contacts),
+            cache_hits,
+            len(email_contacts),
+            valid_email_count,
+        )
+
         return {
             "lookup_method": lookup_method,
             "company_context": {
@@ -378,6 +445,7 @@ class SmartleadAdapter:
             "contacts_enriched": contacts_with_email,
             "stats": {
                 "contacts_found": len(contacts),
+                "email_cache_hits": cache_hits,
                 "email_requested": 0 if exclusion_applied else len(email_contacts),
                 "valid_emails_found": valid_email_count,
             },

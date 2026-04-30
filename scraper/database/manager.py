@@ -605,6 +605,52 @@ class DatabaseManager:
         finally:
             session.close()
 
+    def get_cached_emails_by_domain(self, domain: str) -> Dict[tuple, Dict[str, Any]]:
+        """
+        Return a (firstName.lower, lastName.lower, domain) -> contact dict map
+        built from smartlead_enrichment.contacts_enriched for any company_data
+        record whose company_url matches the given domain.
+        Only contacts with a non-empty email_id are included.
+        """
+        if not domain:
+            return {}
+        session = self.get_session()
+        try:
+            logger.info("[EMAIL CACHE] DB query | domain=%s", domain)
+            rows = (
+                session.query(CompanyData.smartlead_enrichment)
+                .filter(
+                    and_(
+                        CompanyData.smartlead_enrichment.isnot(None),
+                        CompanyData.company_url.ilike(f"%{domain}%"),
+                    )
+                )
+                .all()
+            )
+            cache: Dict[tuple, Dict[str, Any]] = {}
+            for (enrichment,) in rows:
+                if not enrichment:
+                    continue
+                for contact in enrichment.get("contacts_enriched") or []:
+                    email_id = (contact.get("email_id") or "").strip()
+                    if not email_id or "@example.com" in email_id.lower():
+                        continue
+                    first = (contact.get("firstName") or "").strip().lower()
+                    last = (contact.get("lastName") or "").strip().lower()
+                    contact_domain = (contact.get("companyDomain") or domain).strip().lower()
+                    if first and last:
+                        cache[(first, last, contact_domain)] = contact
+            logger.info(
+                "[EMAIL CACHE] DB query result | domain=%s | matching_company_records=%d | cached_emails_found=%d",
+                domain, len(rows), len(cache),
+            )
+            return cache
+        except Exception as exc:
+            logger.warning("[EMAIL CACHE] DB query failed | domain=%s | error=%s", domain, exc)
+            return {}
+        finally:
+            session.close()
+
     def close(self):
         """Close database connection."""
         self.engine.dispose()

@@ -161,6 +161,7 @@ def enrich_job(
                     company_name=company["company_name"],
                     domain=domain,
                     location=company["location"],
+                    db=db,
                 )
                 
                 if enrichment_data:
