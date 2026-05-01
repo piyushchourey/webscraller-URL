@@ -326,7 +326,7 @@ class CompanyFilterConfig:
         return cls(
             enabled=_env_bool("ENRICHMENT_COMPANY_FILTER_ENABLED", True),
             min_employees=_env_int("ENRICHMENT_COMPANY_MIN_EMPLOYEES", 15),
-            max_employees=_env_int("ENRICHMENT_COMPANY_MAX_EMPLOYEES", 2000),
+            max_employees=_env_int("ENRICHMENT_COMPANY_MAX_EMPLOYEES", 1000),
             industry_exclusions=_env_csv("ENRICHMENT_EXCLUDED_INDUSTRIES"),
             location_exclusions=_env_csv("ENRICHMENT_EXCLUDED_LOCATIONS"),
         )
