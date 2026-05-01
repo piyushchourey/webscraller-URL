@@ -48,7 +48,7 @@ class SmartleadAdapter:
         self.search_contacts_path = "/api/v1/search-email-leads/search-contacts"
         self.find_emails_path = "/api/v1/search-email-leads/search-contacts/find-emails"
         self.find_emails_batch_size = 10
-        self.default_levels = ["VP-Level", "C-Level", "Manager-Level", "Director-Level"]
+        self.default_levels = ["VP-Level", "C-Level", "Director-Level"]
         self.department_filters = ["Finance & Administration","Engineering","Other","Operations","IT & IS"]
         self.rate_limit_per_minute = rate_limit_per_minute
         self.min_delay_between_requests = 60.0 / rate_limit_per_minute

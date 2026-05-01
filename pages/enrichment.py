@@ -433,7 +433,7 @@ with tab1:
                 company_max_employees = st.number_input(
                     "Max employees (exclude above)",
                     min_value=0,
-                    value=2000,
+                    value=1000,
                     step=1,
                     help="Companies above this size are excluded from find-emails.",
                 )

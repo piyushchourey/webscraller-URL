@@ -317,7 +317,7 @@ class CompanyFilterEngine:
 class CompanyFilterConfig:
     enabled: bool = True
     min_employees: int = 15
-    max_employees: int = 2000
+    max_employees: int = 1000
     industry_exclusions: List[str] = None
     location_exclusions: List[str] = None
 
